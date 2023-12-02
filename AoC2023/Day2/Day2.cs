@@ -36,49 +36,38 @@ namespace AoC2023.Day2
                 return Rounds.Max(r => r.ContainsKey(color) ? r[color] : 0);
             }
 
+            public bool Possible(int limitRed, int limitGreen, int limitBlue)
+            {
+                return CalcMax("red") <= limitRed
+                    && CalcMax("green") <= limitGreen
+                    && CalcMax("blue") <= limitBlue;
+            }
+
             public int CalcPower()
             {
                 return CalcMax("red") * CalcMax("green") * CalcMax("blue");
             }
         }
 
-        private static int Solve(string filename)
+        private static int Solve1(string filename)
         {
-            int limitRed = 12;
-            int limitGreen = 13;
-            int limitBlue = 14;
-            int sum = 0;
-
-            foreach ( var line in System.IO.File.ReadAllLines(filename))
-            {
-                var game = Game.Parse(line);
-                if (game.CalcMax("red") <= limitRed
-                    && game.CalcMax("green") <= limitGreen
-                    && game.CalcMax("blue") <= limitBlue)
-                    sum += game.Number;
-            }
-
-            return sum;
+            return System.IO.File.ReadAllLines(filename)
+                .Select(Game.Parse)
+                .Where(g => g.Possible(12, 13, 14))
+                .Sum(g => g.Number);
         }
 
         private static int Solve2(string filename)
         {
-            int sum = 0;
-
-            foreach (var line in System.IO.File.ReadAllLines(filename))
-            {
-                var game = Game.Parse(line);
-                int power = game.CalcPower();
-                sum += power;
-            }
-
-            return sum;
+            return System.IO.File.ReadAllLines(filename)
+                .Select(Game.Parse)
+                .Sum(g => g.CalcPower());
         }
 
         public static void Solve()
         {
-            int x = Solve2("Day2/input.txt");
-            Console.WriteLine(x);
+            Console.WriteLine(Solve1("Day2/input.txt"));
+            Console.WriteLine(Solve2("Day2/input.txt"));
         }
     }
 }
