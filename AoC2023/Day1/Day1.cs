@@ -5,11 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AoC2023.Day1
+namespace AoC2023
 {
-    internal class Day1
+    public class Day1 : DayBase
     {
-        private static int Solve1(string filename)
+        public Day1() : base(1)
+        {
+        }
+
+        protected override object Solve1(string filename)
         {
             int sum = 0;
 
@@ -76,7 +80,7 @@ namespace AoC2023.Day1
             return value;
         }
 
-        private static int Solve2(string filename)
+        protected override object Solve2(string filename)
         {
             int sum = 0;
 
@@ -113,10 +117,9 @@ namespace AoC2023.Day1
             return sum;
         }
 
-        public static void Solve()
-        {
-            int x = Solve2("Day1/input2.txt");
-            Console.WriteLine(x);
-        }
+        public override object SolutionExample1 => 142;
+        public override object SolutionPuzzle1 => 54331;
+        public override object SolutionExample2 => 281;
+        public override object SolutionPuzzle2 => 54518;
     }
 }

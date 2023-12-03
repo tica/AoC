@@ -5,10 +5,14 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace AoC2023.Day2
+namespace AoC2023
 {
-    internal class Day2
+    public class Day2 : DayBase
     {
+        public Day2() : base(2)
+        {
+        }
+
         record Game(int Number, List<Dictionary<string, int>> Rounds)
         {
             static Dictionary<string, int> ParseRound(string input)
@@ -49,7 +53,7 @@ namespace AoC2023.Day2
             }
         }
 
-        private static int Solve1(string filename)
+        protected override object Solve1(string filename)
         {
             return System.IO.File.ReadAllLines(filename)
                 .Select(Game.Parse)
@@ -57,17 +61,16 @@ namespace AoC2023.Day2
                 .Sum(g => g.Number);
         }
 
-        private static int Solve2(string filename)
+        protected override object Solve2(string filename)
         {
             return System.IO.File.ReadAllLines(filename)
                 .Select(Game.Parse)
                 .Sum(g => g.CalcPower());
         }
 
-        public static void Solve()
-        {
-            Console.WriteLine(Solve1("Day2/input.txt"));
-            Console.WriteLine(Solve2("Day2/input.txt"));
-        }
+        public override object SolutionExample1 => 8;
+        public override object SolutionPuzzle1 => 2541;
+        public override object SolutionExample2 => 2286;
+        public override object SolutionPuzzle2 => 66016;
     }
 }
