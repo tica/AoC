@@ -44,10 +44,16 @@ namespace AoC2023
 
         public void PrintAll()
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
             Console.WriteLine(SolveExample1());
             Console.WriteLine(SolvePuzzle1());
             Console.WriteLine(SolveExample2());
             Console.WriteLine(SolvePuzzle2());
+
+            sw.Stop();
+            Console.WriteLine();
+            Console.WriteLine($"Total run time: {sw.ElapsedMilliseconds} ms");
         }
 
         public abstract object SolutionExample1 { get; }

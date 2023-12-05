@@ -39,6 +39,14 @@ namespace AoC2023
                 var end = Math.Min(End, other.End);
                 return (begin < end);
             }
+
+            public Range Merge(Range other)
+            {
+                var begin = Math.Min(Begin, other.Begin);
+                var end = Math.Max(End, other.End);
+
+                return new Range(begin, end - begin);
+            }
         }
 
         record class RangeMapping(long Destination, Range SourceRange)
