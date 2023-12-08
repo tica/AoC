@@ -18,28 +18,28 @@ namespace AoC2003Test.Internal
         [TestMethod]
         public void Example1()
         {
-            Assert.AreEqual(Day.SolveExample1(), Day.SolutionExample1);
+            Assert.AreEqual(Day.SolutionExample1, Day.SolveExample1());
         }
         [TestMethod]
         public void Puzzle1()
         {
             var day = new AoC2023.Day1();
 
-            Assert.AreEqual(Day.SolvePuzzle1(), Day.SolutionPuzzle1);
+            Assert.AreEqual(Day.SolutionPuzzle1, Day.SolvePuzzle1());
         }
         [TestMethod]
         public void Example2()
         {
             var day = new AoC2023.Day1();
 
-            Assert.AreEqual(Day.SolveExample2(), Day.SolutionExample2);
+            Assert.AreEqual(Day.SolutionExample2, Day.SolveExample2());
         }
         [TestMethod]
         public void Puzzle2()
         {
             var day = new AoC2023.Day1();
 
-            Assert.AreEqual(Day.SolvePuzzle2(), Day.SolutionPuzzle2);
+            Assert.AreEqual(Day.SolutionPuzzle2, Day.SolvePuzzle2());
         }
     }
 }
