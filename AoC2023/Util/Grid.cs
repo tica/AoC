@@ -123,7 +123,7 @@ namespace AoC2023.Util
             {
                 get
                 {
-                    if (IsTopBorder)
+                    if (IsBottomBorder)
                         return Invalid;
 
                     return new Coord(Parent, X, Y + 1);
@@ -178,6 +178,17 @@ namespace AoC2023.Util
                         yield return Right;
                         if (!IsBottomBorder) yield return BottomRight;
                     }
+                }
+            }
+
+            public IEnumerable<Coord> NeighborCoords
+            {
+                get
+                {
+                    if (!IsLeftBorder) yield return Left;
+                    if (!IsTopBorder) yield return Top;
+                    if (!IsBottomBorder) yield return Bottom;
+                    if (!IsRightBorder) yield return Right;
                 }
             }
         }
