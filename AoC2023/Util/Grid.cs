@@ -8,18 +8,46 @@ namespace AoC2023.Util
 {
     internal class Grid
     {
-        private char[][] data;
+        private List<List<char>> data;
 
-        public int Width { get; init; }
-        public int Height { get; init; }
+        public int Width { get; private set;}
+        public int Height { get; private set; }
 
         public Grid(string fileName)
         {
             data = System.IO.File.ReadAllLines(fileName)
-                .Select(s => s.ToArray())
-                .ToArray();
-            Width = data[0].Length;
-            Height = data.Length;
+                .Select(s => s.ToList())
+                .ToList();
+            Width = data[0].Count;
+            Height = data.Count;
+        }
+
+        public void Print()
+        {
+            for (int y = 0; y < Height; ++y)
+            {
+                for (int x = 0; x < Width; ++x)
+                {
+                    var c = new Grid.Coord(this, x, y);
+                    Console.Write(this[c]);
+                }
+                Console.WriteLine();
+            }
+        }
+
+        public void InsertRow(int y, char c)
+        {
+            data.Insert(y, Enumerable.Repeat(c, Width).ToList());
+            Height += 1;
+        }
+
+        public void InsertColumn(int x, char c)
+        {
+            foreach (var row in data)
+            {
+                row.Insert(x, c);
+            }
+            Width += 1;
         }
 
         public IEnumerable<Coord> AllCoordinates
@@ -33,6 +61,22 @@ namespace AoC2023.Util
                         yield return new Coord(this, x, y);
                     }
                 }
+            }
+        }
+
+        public IEnumerable<Coord> Row(int y)
+        {
+            for(int x = 0; x < Width; ++x)
+            {
+                yield return new Coord(this, x, y);
+            }
+        }
+
+        public IEnumerable<Coord> Column(int x)
+        {
+            for (int y = 0; y < Height; ++y)
+            {
+                yield return new Coord(this, x, y);
             }
         }
 
