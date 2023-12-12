@@ -56,6 +56,22 @@ namespace AoC2023
             Console.WriteLine($"Total run time: {sw.ElapsedMilliseconds} ms");
         }
 
+        private void PrintResult(Func<object> fn)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var res = fn();
+            sw.Stop();
+            Console.WriteLine($"{res}\t({sw.ElapsedMilliseconds} ms)");
+        }
+
+        public void PrintAllDetail()
+        {
+            PrintResult(SolveExample1);
+            PrintResult(SolvePuzzle1);
+            PrintResult(SolveExample2);
+            PrintResult(SolvePuzzle2);
+        }
+
         public abstract object SolutionExample1 { get; }
         public abstract object SolutionPuzzle1 { get; }
         public abstract object SolutionExample2 { get; }

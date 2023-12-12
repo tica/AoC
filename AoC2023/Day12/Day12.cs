@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -22,14 +23,349 @@ namespace AoC2023
         public override object SolutionExample2 => throw new NotImplementedException();
         public override object SolutionPuzzle2 => throw new NotImplementedException();
 
+        enum Symbol
+        {
+            Operational,
+            Damaged,
+            Unknown
+        }
+
+        private static Symbol ToSymbol(char ch)
+        {
+            switch(ch)
+            {
+                case '.': return Symbol.Operational;
+                case '#': return Symbol.Damaged;
+                case '?': return Symbol.Unknown;
+                default:
+                    throw new Exception("oops");
+            }
+        }
+
+        enum ValidationResult
+        {
+            Match,
+            Ok,
+            Error
+        }
+
+        struct ValidationState
+        {
+            public ValidationResult Result;
+            public byte Rule;
+            public byte Pos;
+            public byte Damaged;
+
+            public static readonly ValidationState Start = new ValidationState { Rule = 0, Pos = 0, Damaged = 0 };
+            public static readonly ValidationState Error = new ValidationState { Result = ValidationResult.Error };
+            public static readonly ValidationState CompleteMatch = new ValidationState { Result = ValidationResult.Match };
+        }
+
+        private static ValidationState ValidateStep(List<Symbol> pattern, List<int> rules, ValidationState state)
+        {            
+            switch (pattern[state.Pos])
+            {
+                case Symbol.Operational:
+                    if (state.Damaged > 0)
+                    {
+                        if (state.Rule == rules.Count)
+                            return ValidationState.Error;
+
+                        if (rules[state.Rule] == state.Damaged)
+                        {
+                            if (state.Pos == (pattern.Count - 1) && state.Rule == (rules.Count - 1))
+                                return ValidationState.CompleteMatch;
+
+                            return new ValidationState
+                            {
+                                Result = ValidationResult.Ok,
+                                Rule = (byte)(state.Rule + 1),
+                                Pos = (byte)(state.Pos + 1)
+                            };
+                        }
+                        else
+                        {
+                            return ValidationState.Error;
+                        }
+                    }
+                    else
+                    {
+                        if( state.Pos == (pattern.Count - 1) && state.Rule == rules.Count )
+                            return ValidationState.CompleteMatch;
+
+                        return new ValidationState
+                        {
+                            Result = ValidationResult.Ok,
+                            Rule = state.Rule,
+                            Pos = (byte)(state.Pos + 1)
+                        };
+                    }
+                case Symbol.Damaged:
+                    if (state.Rule == rules.Count)
+                        return ValidationState.Error;
+                    if ((state.Damaged + 1) > rules[state.Rule])
+                        return ValidationState.Error;
+
+                    if (state.Pos == pattern.Count - 1)
+                    {
+                        if (state.Rule == rules.Count - 1 && state.Damaged + 1 == rules[state.Rule])
+                            return ValidationState.CompleteMatch;
+                        else
+                            return ValidationState.Error;
+                    }
+
+                    return new ValidationState
+                    {
+                        Result = ValidationResult.Ok,
+                        Rule = state.Rule,
+                        Pos = (byte)(state.Pos + 1),
+                        Damaged = (byte)(state.Damaged + 1)
+                    };
+                default:
+                    throw new Exception("oops");
+            }
+        }
+
+        private static bool ValidatePattern(List<Symbol> pattern, List<int> rules)
+        {
+            int currentDamaged = 0;
+            int currentRule = 0;
+
+            foreach(Symbol symbol in pattern)
+            {
+                switch(symbol)
+                {
+                    case Symbol.Unknown: throw new Exception("oops");
+                    case Symbol.Operational:
+                        if ( currentDamaged > 0)
+                        {
+                            if (currentRule == rules.Count)
+                                return false;
+
+                            if (rules[currentRule] == currentDamaged)
+                            {
+                                currentRule += 1;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        currentDamaged = 0;
+                        break;
+                    case Symbol.Damaged:
+                        currentDamaged += 1;
+                        if (currentRule == rules.Count)
+                            return false;
+                        if (currentDamaged > rules[currentRule])
+                            return false;
+                        break;
+                }    
+            }
+
+            if (currentRule < rules.Count)
+            {
+                if (currentDamaged > 0)
+                {
+                    if (rules[currentRule] == currentDamaged)
+                    {
+                        currentRule += 1;
+                    }
+                }
+
+                return currentRule == rules.Count;
+            }
+            else
+            {
+                return currentDamaged == 0;
+            }
+        }
+
+        private void PrintPattern(List<Symbol> pattern)
+        {
+            foreach( var s in pattern)
+            {
+                switch(s)
+                {
+                    case Symbol.Unknown:
+                        Console.Write('?');
+                        break;
+                    case Symbol.Damaged:
+                        Console.Write('#');
+                        break;
+                    case Symbol.Operational:
+                        Console.Write('.');
+                        break;
+                    default:
+                        break;
+                }
+            }
+            Console.WriteLine();
+        }
+
+        private long MutatePattern(List<Symbol> pattern, int pos, List<int> rules, ValidationState state)
+        {
+            long result = 0;
+
+            if (pattern[pos] != Symbol.Unknown)
+            {
+                var nextState = ValidateStep(pattern, rules, state);
+                if (nextState.Result == ValidationResult.Match)
+                {
+#if DEBUG
+                    if (!ValidatePattern(pattern, rules))
+                    {
+                        System.Diagnostics.Debugger.Break();
+                    }
+#endif
+
+                    result += 1;
+                }
+                else if (nextState.Result == ValidationResult.Ok)
+                {
+                    if (pos < pattern.Count - 1)
+                    {
+                        result += MutatePattern(pattern, pos + 1, rules, nextState);
+                    }
+                }
+            }
+            else
+            {
+                pattern[pos] = Symbol.Operational;
+                var nextState = ValidateStep(pattern, rules, state);
+                if (nextState.Result == ValidationResult.Match)
+                {
+#if DEBUG
+                    if (!ValidatePattern(pattern, rules))
+                    {
+                        System.Diagnostics.Debugger.Break();
+                    }
+#endif
+
+                    result += 1;
+                }
+                else if (nextState.Result == ValidationResult.Ok)
+                {
+                    if (pos < pattern.Count - 1)
+                        result += MutatePattern(pattern, pos + 1, rules, nextState);
+                }
+
+                pattern[pos] = Symbol.Damaged;
+                nextState = ValidateStep(pattern, rules, state);
+                if (nextState.Result == ValidationResult.Match)
+                {
+#if DEBUG
+                    if (!ValidatePattern(pattern, rules))
+                    {
+                        System.Diagnostics.Debugger.Break();
+                    }
+#endif
+
+                    result += 1;
+                }
+                else if (nextState.Result == ValidationResult.Ok)
+                {
+                    if (pos < pattern.Count - 1)
+                        result += MutatePattern(pattern, pos + 1, rules, nextState);
+                }
+
+                pattern[pos] = Symbol.Unknown;
+            }
+
+            return result;
+        }
+
         protected override object Solve1(string filename)
         {
-            throw new NotImplementedException();
+            long sum = 0;
+
+            foreach ( var line in System.IO.File.ReadAllLines(filename))
+            {
+                var m = Regex.Match(line, @"([\?\.#]+)\s([\d\,]+)");
+                var pattern = m.Groups[1].Value.Select(ToSymbol).ToList();
+                var rules = m.Groups[2].Value.Split(',').Select(int.Parse).ToList();
+
+//                Console.Write($"{m.Groups[1].Value} {m.Groups[2].Value}");
+                var n = MutatePattern(pattern, 0, rules, ValidationState.Start);
+//                Console.WriteLine($" -> {n}");
+                sum += n;
+            }
+
+            return sum;
+        }
+
+        private static (string, long) ParseCacheLine(string line)
+        {
+            var m = Regex.Match(line, @"[^\s]+ ([^\s]+\s[^\s]+) -> (\d+)");
+            return (m.Groups[1].Value, long.Parse(m.Groups[2].Value));
         }
 
         protected override object Solve2(string filename)
         {
-            throw new NotImplementedException();
+            long sum = 0;
+            int count = 0;
+
+            var cache = System.IO.File.ReadAllLines("day12/cache.txt")
+                .Select(ParseCacheLine)
+                .DistinctBy(p=> p.Item1)
+                .ToDictionary(p => p.Item1, p => p.Item2);
+
+            var lines = System.IO.File.ReadAllLines(filename).ToList();
+
+            var mtx = new object();
+
+            var remaining = new List<string>();
+
+            foreach( var line in lines)
+            {
+                var m = Regex.Match(line, @"([\?\.#]+)\s([\d\,]+)");
+
+                var patternString = string.Join('?', m.Groups[1].Value, m.Groups[1].Value, m.Groups[1].Value, m.Groups[1].Value, m.Groups[1].Value);
+                var rulesString = string.Join(',', m.Groups[2].Value, m.Groups[2].Value, m.Groups[2].Value, m.Groups[2].Value, m.Groups[2].Value);
+
+                var cacheLookup = $"{patternString} {rulesString}";
+                if (cache.TryGetValue(cacheLookup, out long n))
+                {
+                    sum += n;
+                    count += 1;
+
+                    Console.WriteLine($"({count}/{lines.Count}) {patternString} {rulesString} -> {n} (CACHED)");
+                }
+                else
+                {
+                    remaining.Add(line);
+                }
+            }
+
+            Parallel.ForEach(remaining,
+                (line) =>
+                //foreach( var line in remaining)
+                {
+                    var m = Regex.Match(line, @"([\?\.#]+)\s([\d\,]+)");
+
+                    var patternString = string.Join('?', m.Groups[1].Value, m.Groups[1].Value, m.Groups[1].Value, m.Groups[1].Value, m.Groups[1].Value);
+                    var rulesString = string.Join(',', m.Groups[2].Value, m.Groups[2].Value, m.Groups[2].Value, m.Groups[2].Value, m.Groups[2].Value);
+
+                    long n = 0;
+                    var pattern = patternString.Select(ToSymbol).ToList();
+                    var rules = rulesString.Split(',').Select(int.Parse).ToList();
+
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    n = MutatePattern(pattern, 0, rules, ValidationState.Start);
+                    sw.Stop();
+
+                    Interlocked.Add(ref sum, n);
+                    Interlocked.Increment(ref count);
+
+                    lock (mtx)
+                    {
+                        Console.WriteLine($"({count}/{lines.Count}) {patternString} {rulesString} -> {n} ({sw.ElapsedMilliseconds} ms)");
+                        Console.Out.Flush();
+                    }
+                }
+            );
+
+            return sum;
         }
     }
 }
