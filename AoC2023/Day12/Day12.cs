@@ -1,6 +1,7 @@
 ﻿using AoC2023.Util;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Numerics;
 using System.Runtime;
@@ -285,6 +286,138 @@ namespace AoC2023
                 .ToList();
         }
 
+        struct Pattern
+        {
+            public UInt128 DamagedMask;
+            public UInt128 OperationalMask;
+            public UInt128 CoveredMask;
+        }
+
+        struct Rule
+        {
+            public int Length;
+            public int FinalStart;
+            public UInt128 Mask;
+            public UInt128 InverseMaskShift1;
+            public UInt128 InverseMask0;
+        }
+
+        private IEnumerable<Rule> BuildRules(List<int> rules, int patternLength)
+        {
+            for( int i = 0; i < rules.Count; ++i)
+            {
+                UInt128 mask = (1ul << (rules[i])) - 1;
+                UInt128 inverseMaskShift1 = (mask | (mask << 2)) & ~(mask << 1);
+                UInt128 inverseMask0 = (mask << 1) & ~mask;
+                yield return new Rule
+                {
+                    Length = rules[i],
+                    FinalStart = patternLength - (rules.Skip(i).Sum() + (rules.Count - i - 1)),
+                    Mask = mask,
+                    InverseMaskShift1 = inverseMaskShift1,
+                    InverseMask0 = inverseMask0,
+                };
+            }
+        }
+
+        private Pattern BuildPattern(List<Symbol> pattern)
+        {
+            UInt128 damagedMask = 0;
+            UInt128 operationalMask = 0;
+
+            for (int i = 0; i < pattern.Count; ++i)
+            {
+                switch (pattern[i])
+                {
+                    case Symbol.Operational:
+                        operationalMask |= (((UInt128)1) << i);
+                        break;
+                    case Symbol.Damaged:
+                        damagedMask |= (((UInt128)1) << i);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return new Pattern
+            {
+                DamagedMask = damagedMask,
+                OperationalMask = operationalMask
+            };
+        }
+
+        private long MutateRules(Pattern pattern, List<Rule> rules, int ruleIndex, int startPosition, Dictionary<(UInt128,int,int), long> cache)
+        {
+            /*
+            if( cache.TryGetValue((pattern.CoveredMask, ruleIndex, startPosition), out long cached))
+            {
+                return cached;
+            }
+            */
+
+            var r = rules[ruleIndex];
+
+            long sum = 0;
+
+            for (int i = startPosition; i <= r.FinalStart; ++i)
+            {
+                /*
+                if (ruleIndex <= 4)
+                    Console.WriteLine($"{new string(' ', ruleIndex)}Rule {ruleIndex} -> {i}");
+                */
+
+                if (((r.Mask << i) & pattern.OperationalMask) != UInt128.Zero)
+                    continue;
+
+                if (i == 0)
+                {
+                    if ((r.InverseMask0 & (pattern.DamagedMask /*| pattern.CoveredMask*/)) != UInt128.Zero)
+                        continue;
+                }
+                else
+                {
+                    if (((r.InverseMaskShift1 << (i - 1)) & (pattern.DamagedMask /*| pattern.CoveredMask*/)) != UInt128.Zero)
+                        continue;
+                }
+
+                long localSum = 0;
+
+                var p = new Pattern
+                {
+                    DamagedMask = pattern.DamagedMask,
+                    OperationalMask = pattern.OperationalMask,
+                    CoveredMask = pattern.CoveredMask | (r.Mask << i)
+                };
+
+                if (ruleIndex == rules.Count - 1)
+                {
+                    if ((p.DamagedMask & ~p.CoveredMask) == UInt128.Zero)
+                    {
+                        localSum += 1;
+                    }
+                }
+                else
+                {
+                    localSum += MutateRules(p, rules, ruleIndex + 1, i + r.Length + 1, cache);
+                }
+
+                sum += localSum;
+            }
+
+            //cache.Add((pattern.CoveredMask, ruleIndex, startPosition), sum);
+
+            return sum;
+        }
+
+        private long MutatePatternBits(List<Symbol> pattern, List<int> rules)
+        {
+            var pp = BuildPattern(pattern);
+            var rr = BuildRules(rules, pattern.Count).ToList();
+
+            return MutateRules(pp, rr, 0, 0, new());
+        }
+
         private (long, long) CountMutations(string patternString, string rulesString)
         {
             long n = 0;
@@ -292,11 +425,43 @@ namespace AoC2023
             var rules = rulesString.Split(',').Select(int.Parse).ToList();
 
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            var rs = CalcLastRuleStarts(rules, pattern.Count);
-            n = MutatePattern(pattern, rules, rs, ValidationState.Start);
+
+
+            if (true)
+            {
+                /*
+                var sw3 = System.Diagnostics.Stopwatch.StartNew();
+                var rs = CalcLastRuleStarts(rules, pattern.Count);
+                var n2 = MutatePattern(pattern, rules, rs, ValidationState.Start);
+                sw3.Stop();
+
+                var sw2 = System.Diagnostics.Stopwatch.StartNew();
+                */
+                n = MutatePatternBits(pattern, rules);
+#if DEBUG
+                var rs = CalcLastRuleStarts(rules, pattern.Count);
+                var n2 = MutatePattern(pattern, rules, rs, ValidationState.Start);
+                if( n != n2)
+                {
+                    System.Diagnostics.Debugger.Break();
+                }
+#endif
+                /*
+                sw2.Stop();
+
+                Console.WriteLine($"n = {n}, {sw2.ElapsedMilliseconds} ms");
+                Console.WriteLine($"n2 = {n}, {sw3.ElapsedMilliseconds} ms");
+                */
+            }
+            else
+            {
+                var rs = CalcLastRuleStarts(rules, pattern.Count);
+                n = MutatePattern(pattern, rules, rs, ValidationState.Start);
+            }
+
             sw.Stop();
 
-            //Console.WriteLine($"Test: {patternString} {rulesString} -> {n} ({sw.ElapsedMilliseconds} ms)");
+            Console.WriteLine($"Test: {patternString} {rulesString} -> {n} ({sw.ElapsedMilliseconds} ms)");
             return (n, sw.ElapsedMilliseconds);
         }
 
@@ -361,7 +526,6 @@ namespace AoC2023
                 }
             }
 
-            /*
             Console.WriteLine("Remaining lines:");
             foreach ( var line in remaining)
             {
@@ -369,11 +533,10 @@ namespace AoC2023
             }
             Console.WriteLine();
             Console.WriteLine();
-            */
 
-            Parallel.ForEach(remaining,
-                (line) =>
-                //foreach( var line in remaining)
+            //Parallel.ForEach(remaining,
+            //(line) =>
+            foreach ( var line in remaining)
                 {
                     var m = Regex.Match(line, @"([\?\.#]+)\s([\d\,]+)");
 
@@ -391,7 +554,7 @@ namespace AoC2023
                         Console.Out.Flush();
                     }
                 }
-            );
+            //);
 
             return sum;
         }
