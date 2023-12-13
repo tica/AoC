@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,6 +21,34 @@ namespace AoC2023.Util
                 .ToList();
             Width = data[0].Count;
             Height = data.Count;
+        }
+
+        private Grid(List<List<char>> d)
+        {
+            data = d;
+            Width = data[0].Count;
+            Height = data.Count;
+        }
+
+        public static IEnumerable<Grid> LoadMultiple(string filename)
+        {
+            var current = new List<List<char>>();
+
+            foreach(var line in System.IO.File.ReadAllLines(filename))
+            {
+                if( line.Length > 0)
+                {
+                    current.Add(line.ToList());
+                }
+                else
+                {
+                    yield return new Grid(current);
+                    current = new();
+                }
+            }
+
+            if( current.Count > 0 )
+                yield return new Grid(current);
         }
 
         public void Print()
@@ -70,6 +99,32 @@ namespace AoC2023.Util
             {
                 yield return new Coord(this, x, y);
             }
+        }
+
+        private ulong ToBits(List<Coord> coords, Func<char, bool> predicate)
+        {
+            if (coords.Count > 64)
+                throw new InvalidOperationException();
+
+            ulong result = 0;
+            for (int i = 0; i < coords.Count; ++i)
+            {
+                if (predicate(this[coords[i]]))
+                {
+                    result |= (1ul << i);
+                }
+            }
+
+            return result;
+        }
+
+        public ulong RowBits(int y, Func<char, bool> predicate)
+        {
+            return ToBits(Row(y).ToList(), predicate);
+        }
+        public ulong ColumnBits(int x, Func<char, bool> predicate)
+        {
+            return ToBits(Column(x).ToList(), predicate);
         }
 
         public IEnumerable<Coord> Column(int x)
