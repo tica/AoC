@@ -347,14 +347,13 @@ namespace AoC2023
             };
         }
 
-        private long MutateRules(Pattern pattern, List<Rule> rules, int ruleIndex, int startPosition, Dictionary<(UInt128,int,int), long> cache)
+        private long MutateRules(Pattern pattern, List<Rule> rules, int ruleIndex, int startPosition, Dictionary<(int,int), long> cache)
         {
             /*
-            if( cache.TryGetValue((pattern.CoveredMask, ruleIndex, startPosition), out long cached))
+            if( cache.TryGetValue((ruleIndex, startPosition), out long cached))
             {
                 return cached;
-            }
-            */
+            }*/
 
             var r = rules[ruleIndex];
 
@@ -381,8 +380,6 @@ namespace AoC2023
                         continue;
                 }
 
-                long localSum = 0;
-
                 var p = new Pattern
                 {
                     DamagedMask = pattern.DamagedMask,
@@ -394,18 +391,29 @@ namespace AoC2023
                 {
                     if ((p.DamagedMask & ~p.CoveredMask) == UInt128.Zero)
                     {
-                        localSum += 1;
+                        sum += 1;
                     }
                 }
                 else
                 {
-                    localSum += MutateRules(p, rules, ruleIndex + 1, i + r.Length + 1, cache);
+                    sum += MutateRules(p, rules, ruleIndex + 1, i + r.Length + 1, cache);
                 }
-
-                sum += localSum;
             }
 
-            //cache.Add((pattern.CoveredMask, ruleIndex, startPosition), sum);
+#if DEBUG
+            if (cache.TryGetValue((ruleIndex, startPosition), out long cached))
+            {
+                // #TODO: Build as only the actually covered # up to where we are
+                if (cached != sum)
+                {
+                    System.Diagnostics.Debugger.Break();
+                }
+            }
+            else
+            {
+                cache.Add((ruleIndex, startPosition), sum);
+            }
+#endif
 
             return sum;
         }
