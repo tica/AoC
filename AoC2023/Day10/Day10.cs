@@ -269,7 +269,7 @@ namespace AoC2023
                 inner.AddRange(inside);
             }
 
-            PrintGrid(grid);
+            //PrintGrid(grid);
 
             return inner.Count;
         }

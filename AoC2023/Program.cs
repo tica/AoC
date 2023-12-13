@@ -34,7 +34,7 @@ namespace AoC2023
 
         static void Main(string[] args)
         {
-            new Day12().PrintAllDetail();
+            CreateLatest().PrintAllDetail();
         }
     }
 }
