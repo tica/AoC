@@ -61,7 +61,7 @@ namespace AoC2023
             public static readonly ValidationState CompleteMatch = new ValidationState { Result = ValidationResult.Match };
         }
 
-        private static ValidationState ValidateStep(List<Symbol> pattern, List<int> rules, ValidationState state)
+        private static ValidationState ValidateStep(List<Symbol> pattern, List<int> rules, List<int> finalRuleStart, ValidationState state)
         {            
             switch (pattern[state.Pos])
             {
@@ -75,6 +75,9 @@ namespace AoC2023
                         {
                             if (state.Pos == (pattern.Count - 1) && state.Rule == (rules.Count - 1))
                                 return ValidationState.CompleteMatch;
+
+                            if (state.Rule + 1 < finalRuleStart.Count && state.Pos + 1 > finalRuleStart[state.Rule + 1])
+                                return ValidationState.Error;
 
                             return new ValidationState
                             {
@@ -203,13 +206,13 @@ namespace AoC2023
             Console.WriteLine();
         }
 
-        private long MutatePattern(List<Symbol> pattern, int pos, List<int> rules, ValidationState state)
+        private long MutatePattern(List<Symbol> pattern, List<int> rules, List<int> finalRuleStart, ValidationState state)
         {
             long result = 0;
 
-            if (pattern[pos] != Symbol.Unknown)
+            if (pattern[state.Pos] != Symbol.Unknown)
             {
-                var nextState = ValidateStep(pattern, rules, state);
+                var nextState = ValidateStep(pattern, rules, finalRuleStart, state);
                 if (nextState.Result == ValidationResult.Match)
                 {
 #if DEBUG
@@ -223,16 +226,16 @@ namespace AoC2023
                 }
                 else if (nextState.Result == ValidationResult.Ok)
                 {
-                    if (pos < pattern.Count - 1)
+                    if (nextState.Pos < pattern.Count)
                     {
-                        result += MutatePattern(pattern, pos + 1, rules, nextState);
+                        result += MutatePattern(pattern, rules, finalRuleStart, nextState);
                     }
                 }
             }
             else
             {
-                pattern[pos] = Symbol.Operational;
-                var nextState = ValidateStep(pattern, rules, state);
+                pattern[state.Pos] = Symbol.Operational;
+                var nextState = ValidateStep(pattern, rules, finalRuleStart, state);
                 if (nextState.Result == ValidationResult.Match)
                 {
 #if DEBUG
@@ -246,12 +249,12 @@ namespace AoC2023
                 }
                 else if (nextState.Result == ValidationResult.Ok)
                 {
-                    if (pos < pattern.Count - 1)
-                        result += MutatePattern(pattern, pos + 1, rules, nextState);
+                    if (nextState.Pos < pattern.Count)
+                        result += MutatePattern(pattern, rules, finalRuleStart, nextState);
                 }
 
-                pattern[pos] = Symbol.Damaged;
-                nextState = ValidateStep(pattern, rules, state);
+                pattern[state.Pos] = Symbol.Damaged;
+                nextState = ValidateStep(pattern, rules, finalRuleStart, state);
                 if (nextState.Result == ValidationResult.Match)
                 {
 #if DEBUG
@@ -265,29 +268,49 @@ namespace AoC2023
                 }
                 else if (nextState.Result == ValidationResult.Ok)
                 {
-                    if (pos < pattern.Count - 1)
-                        result += MutatePattern(pattern, pos + 1, rules, nextState);
+                    if (nextState.Pos < pattern.Count)
+                        result += MutatePattern(pattern, rules, finalRuleStart, nextState);
                 }
 
-                pattern[pos] = Symbol.Unknown;
+                pattern[state.Pos] = Symbol.Unknown;
             }
 
             return result;
         }
 
+        private static List<int> CalcLastRuleStarts(List<int> rules, int patternLength)
+        {
+            return Enumerable.Range(0, rules.Count)
+                .Select(x => patternLength - (rules.Skip(x).Sum() + (rules.Count - x - 1)))
+                .ToList();
+        }
+
+        private (long, long) CountMutations(string patternString, string rulesString)
+        {
+            long n = 0;
+            var pattern = patternString.Select(ToSymbol).ToList();
+            var rules = rulesString.Split(',').Select(int.Parse).ToList();
+
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var rs = CalcLastRuleStarts(rules, pattern.Count);
+            n = MutatePattern(pattern, rules, rs, ValidationState.Start);
+            sw.Stop();
+
+            //Console.WriteLine($"Test: {patternString} {rulesString} -> {n} ({sw.ElapsedMilliseconds} ms)");
+            return (n, sw.ElapsedMilliseconds);
+        }
+
         protected override object Solve1(string filename)
         {
+            //var test = CountMutations("?????.#??.??????.#??.??????.#??.??????.#??.??????.#??.", "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1");
+
             long sum = 0;
 
             foreach ( var line in System.IO.File.ReadAllLines(filename))
             {
                 var m = Regex.Match(line, @"([\?\.#]+)\s([\d\,]+)");
-                var pattern = m.Groups[1].Value.Select(ToSymbol).ToList();
-                var rules = m.Groups[2].Value.Split(',').Select(int.Parse).ToList();
 
-//                Console.Write($"{m.Groups[1].Value} {m.Groups[2].Value}");
-                var n = MutatePattern(pattern, 0, rules, ValidationState.Start);
-//                Console.WriteLine($" -> {n}");
+                var (n, ms) = CountMutations(m.Groups[1].Value, m.Groups[2].Value);
                 sum += n;
             }
 
@@ -306,6 +329,7 @@ namespace AoC2023
             int count = 0;
 
             var cache = System.IO.File.ReadAllLines("day12/cache.txt")
+                .Where(l => l.Length > 0)
                 .Select(ParseCacheLine)
                 .DistinctBy(p=> p.Item1)
                 .ToDictionary(p => p.Item1, p => p.Item2);
@@ -337,6 +361,16 @@ namespace AoC2023
                 }
             }
 
+            /*
+            Console.WriteLine("Remaining lines:");
+            foreach ( var line in remaining)
+            {
+                Console.WriteLine(line);
+            }
+            Console.WriteLine();
+            Console.WriteLine();
+            */
+
             Parallel.ForEach(remaining,
                 (line) =>
                 //foreach( var line in remaining)
@@ -346,20 +380,14 @@ namespace AoC2023
                     var patternString = string.Join('?', m.Groups[1].Value, m.Groups[1].Value, m.Groups[1].Value, m.Groups[1].Value, m.Groups[1].Value);
                     var rulesString = string.Join(',', m.Groups[2].Value, m.Groups[2].Value, m.Groups[2].Value, m.Groups[2].Value, m.Groups[2].Value);
 
-                    long n = 0;
-                    var pattern = patternString.Select(ToSymbol).ToList();
-                    var rules = rulesString.Split(',').Select(int.Parse).ToList();
-
-                    var sw = System.Diagnostics.Stopwatch.StartNew();
-                    n = MutatePattern(pattern, 0, rules, ValidationState.Start);
-                    sw.Stop();
+                    var (n, ms) = CountMutations(patternString, rulesString);
 
                     Interlocked.Add(ref sum, n);
                     Interlocked.Increment(ref count);
 
                     lock (mtx)
                     {
-                        Console.WriteLine($"({count}/{lines.Count}) {patternString} {rulesString} -> {n} ({sw.ElapsedMilliseconds} ms)");
+                        Console.WriteLine($"({count}/{lines.Count}) {patternString} {rulesString} -> {n} ({ms} ms)");
                         Console.Out.Flush();
                     }
                 }
