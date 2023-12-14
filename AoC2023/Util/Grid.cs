@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AoC2023.Util
 {
-    internal class Grid
+    internal class Grid : IEquatable<Grid>
     {
         private List<List<char>> data;
 
@@ -28,6 +28,33 @@ namespace AoC2023.Util
             data = d;
             Width = data[0].Count;
             Height = data.Count;
+        }
+
+        public Grid Clone()
+        {
+            return new Grid(data.Select(
+                x => new List<char>(x)).ToList());
+        }
+
+        public bool Equals(Grid? other)
+        {
+            if (ReferenceEquals(null, other))
+                return false;
+            if (ReferenceEquals(this, other))
+                return true;
+
+            if (Width != other.Width)
+                return false;
+            if (Height != other.Height)
+                return false;
+
+            foreach(var p in AllCoordinates)
+            {
+                if (this[p] != other[p])
+                    return false;
+            }
+
+            return true;
         }
 
         public static IEnumerable<Grid> LoadMultiple(string filename)
@@ -98,6 +125,27 @@ namespace AoC2023.Util
             for(int x = 0; x < Width; ++x)
             {
                 yield return new Coord(this, x, y);
+            }
+        }
+
+        public IEnumerable<IEnumerable<Coord>> Rows
+        {
+            get
+            {
+                for (int y = 0; y < Height; ++y)
+                {
+                    yield return Row(y);
+                }
+            }
+        }
+        public IEnumerable<IEnumerable<Coord>> Columns
+        {
+            get
+            {
+                for (int x = 0; x < Width; ++x)
+                {
+                    yield return Column(x);
+                }
             }
         }
 
