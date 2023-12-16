@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 
 namespace AoC2023.Util
 {
+    internal enum Direction
+    {
+        Right, Left, Up, Down,
+    }
+
     internal static class GridHelper
     {
         public static Grid<char> Load(string path)
@@ -41,7 +46,7 @@ namespace AoC2023.Util
         }
     }
 
-    internal class Grid<T> : IEquatable<Grid<T>> where T: IEqualityOperators<T, T, bool>
+    internal class Grid<T> : IEquatable<Grid<T>> where T: IEquatable<T>
     {
         private List<List<T>> data;
 
@@ -75,20 +80,30 @@ namespace AoC2023.Util
 
             foreach(var p in AllCoordinates)
             {
-                if (this[p] != other[p])
+                if (!this[p].Equals(other[p]))
                     return false;
             }
 
             return true;
         }
 
-        public Grid<TResult> Select<TResult>(Func<T, TResult> selector) where TResult: IEqualityOperators<TResult, TResult, bool>
+        public Grid<TResult> Transform<TResult>(Func<T, TResult> selector) where TResult: IEquatable<TResult>
         {
             return new Grid<TResult>(
                 data.Select(
                     arr => arr.Select(selector).ToList()
                 ).ToList()
             ); ;
+        }
+
+        public int Count(Func<T, bool> predicate)
+        {
+            return AllCoordinates.Count(p => predicate(this[p]));
+        }
+
+        public Coord Pos(int x, int y)
+        {
+            return new Coord(this, x, y);
         }
 
         public void Print()
@@ -99,6 +114,19 @@ namespace AoC2023.Util
                 {
                     var c = new Grid<T>.Coord(this, x, y);
                     Console.Write(this[c]);
+                }
+                Console.WriteLine();
+            }
+        }
+
+        public void Print(Func<T, char> selector)
+        {
+            for (int y = 0; y < Height; ++y)
+            {
+                for (int x = 0; x < Width; ++x)
+                {
+                    var c = new Grid<T>.Coord(this, x, y);
+                    Console.Write(selector(this[c]));
                 }
                 Console.WriteLine();
             }
@@ -140,6 +168,12 @@ namespace AoC2023.Util
                 yield return new Coord(this, x, y);
             }
         }
+
+        public IEnumerable<Coord> FirstRow => Row(0);
+
+        public IEnumerable<Coord> FirstColumn => Column(0);
+        public IEnumerable<Coord> LastRow => Row(Height - 1); 
+        public IEnumerable<Coord> LastColumn => Column(Width - 1);
 
         public IEnumerable<IEnumerable<Coord>> Rows
         {
@@ -349,6 +383,23 @@ namespace AoC2023.Util
                     if (!IsTopBorder) yield return Top;
                     if (!IsBottomBorder) yield return Bottom;
                     if (!IsRightBorder) yield return Right;
+                }
+            }
+
+            public Coord Neighbor(Direction dir)
+            {
+                switch(dir)
+                {
+                    case Direction.Left:
+                        return Left;
+                    case Direction.Right:
+                        return Right;
+                    case Direction.Up:
+                        return Top;
+                    case Direction.Down:
+                        return Bottom;
+                    default:
+                        throw new Exception("oops");
                 }
             }
         }
