@@ -22,7 +22,7 @@ namespace AoC2023
         public override object SolutionExample2 => 64L;
         public override object SolutionPuzzle2 => 85175L;
 
-        private void MoveNorth(Util.Grid grid)
+        private void MoveNorth(Util.Grid<char> grid)
         {
             foreach( var row in grid.Rows )
             {
@@ -42,7 +42,7 @@ namespace AoC2023
             }
         }
 
-        private void MoveSouth(Util.Grid grid)
+        private void MoveSouth(Util.Grid<char> grid)
         {
             foreach (var row in grid.Rows.Reverse())
             {
@@ -62,7 +62,7 @@ namespace AoC2023
             }
         }
 
-        private void MoveWest(Util.Grid grid)
+        private void MoveWest(Util.Grid<char> grid)
         {
             foreach (var col in grid.Columns)
             {
@@ -82,7 +82,7 @@ namespace AoC2023
             }
         }
 
-        private void MoveEast(Util.Grid grid)
+        private void MoveEast(Util.Grid<char> grid)
         {
             foreach (var col in grid.Columns.Reverse())
             {
@@ -102,7 +102,7 @@ namespace AoC2023
             }
         }
 
-        private long Eval(Util.Grid grid)
+        private long Eval(Util.Grid<char> grid)
         {
             long sum = 0;
 
@@ -117,16 +117,16 @@ namespace AoC2023
 
         protected override object Solve1(string filename)
         {
-            var grid = new Util.Grid(filename);
+            var grid = Util.GridHelper.Load(filename);
 
             MoveNorth(grid);
 
             return Eval(grid);
         }
 
-        int FindCycle(Util.Grid grid)
+        int FindCycle(Util.Grid<char> grid)
         {
-            var clones = new List<Util.Grid>();
+            var clones = new List<Util.Grid<char>>();
                         
             for (int j = 0; j < 1_000_000_000; ++j)
             {
@@ -151,7 +151,7 @@ namespace AoC2023
 
         protected override object Solve2(string filename)
         {
-            var grid = new Util.Grid(filename);
+            var grid = Util.GridHelper.Load(filename);
             
             var cycle = FindCycle(grid.Clone());
             int limit = 1_000_000_000 - ((1_000_000_000 / cycle) * cycle);

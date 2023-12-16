@@ -17,10 +17,10 @@ namespace AoC2023
     {
         public Day15(): base(15) { }
 
-        public override object SolutionExample1 => throw new NotImplementedException();
-        public override object SolutionPuzzle1 => throw new NotImplementedException();
-        public override object SolutionExample2 => throw new NotImplementedException();
-        public override object SolutionPuzzle2 => throw new NotImplementedException();
+        public override object SolutionExample1 => 1320L;
+        public override object SolutionPuzzle1 => 517551L;
+        public override object SolutionExample2 => 145L;
+        public override object SolutionPuzzle2 => 286097L;
 
         protected override object Solve1(string filename)
         {

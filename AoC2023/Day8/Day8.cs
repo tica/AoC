@@ -78,7 +78,7 @@ namespace AoC2023
 
                 steps += 1;
 
-                if (p.Id == "ZZZ")
+                if (p!.Id == "ZZZ")
                     break;
             }
 

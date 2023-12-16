@@ -14,7 +14,7 @@ namespace AoC2023
     {
         public Day3() : base(3) { }
 
-        private static int ExtractAndClearNumber(Grid.Coord p)
+        private static int ExtractAndClearNumber(Grid<char>.Coord p)
         {
             var grid = p.Parent;
 
@@ -33,7 +33,7 @@ namespace AoC2023
 
         protected override object Solve1(string filename)
         {
-            var grid = new Grid(filename);
+            var grid = Util.GridHelper.Load(filename);
 
             int sum = 0;
             foreach ( var p in grid.AllCoordinates)
@@ -59,7 +59,7 @@ namespace AoC2023
 
         protected override object Solve2(string filename)
         {
-            var grid = new Grid(filename);
+            var grid = Util.GridHelper.Load(filename);
 
             long sum = 0;
             foreach (var p in grid.AllCoordinates)

@@ -24,7 +24,9 @@ namespace AoC2023
 
         protected override object Solve1(string filename)
         {
-            throw new NotImplementedException();
+            var grid = Util.GridHelper.Load(filename);
+
+            return 0;
         }
 
         protected override object Solve2(string filename)

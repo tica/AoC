@@ -2,41 +2,66 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace AoC2023.Util
 {
-    internal class Grid : IEquatable<Grid>
+    internal static class GridHelper
     {
-        private List<List<char>> data;
+        public static Grid<char> Load(string path)
+        {
+            var data = System.IO.File.ReadAllLines(path)
+                .Select(s => s.ToList())
+                .ToList();
+
+            return new Grid<char>(data);
+        }
+
+        public static IEnumerable<Grid<char>> LoadMultiple(string filename)
+        {
+            var current = new List<List<char>>();
+
+            foreach (var line in System.IO.File.ReadAllLines(filename))
+            {
+                if (line.Length > 0)
+                {
+                    current.Add(line.ToList());
+                }
+                else
+                {
+                    yield return new Grid<char>(current);
+                    current = new();
+                }
+            }
+
+            if (current.Count > 0)
+                yield return new Grid<char>(current);
+        }
+    }
+
+    internal class Grid<T> : IEquatable<Grid<T>> where T: IEqualityOperators<T, T, bool>
+    {
+        private List<List<T>> data;
 
         public int Width { get; private set;}
         public int Height { get; private set; }
 
-        public Grid(string fileName)
-        {
-            data = System.IO.File.ReadAllLines(fileName)
-                .Select(s => s.ToList())
-                .ToList();
-            Width = data[0].Count;
-            Height = data.Count;
-        }
-
-        private Grid(List<List<char>> d)
+        internal Grid(List<List<T>> d)
         {
             data = d;
             Width = data[0].Count;
             Height = data.Count;
         }
 
-        public Grid Clone()
+        public Grid<T> Clone()
         {
-            return new Grid(data.Select(
-                x => new List<char>(x)).ToList());
+            return new Grid<T>(data.Select(
+                x => new List<T>(x)).ToList());
         }
 
-        public bool Equals(Grid? other)
+        public bool Equals(Grid<T>? other)
         {
             if (ReferenceEquals(null, other))
                 return false;
@@ -57,25 +82,13 @@ namespace AoC2023.Util
             return true;
         }
 
-        public static IEnumerable<Grid> LoadMultiple(string filename)
+        public Grid<TResult> Select<TResult>(Func<T, TResult> selector) where TResult: IEqualityOperators<TResult, TResult, bool>
         {
-            var current = new List<List<char>>();
-
-            foreach(var line in System.IO.File.ReadAllLines(filename))
-            {
-                if( line.Length > 0)
-                {
-                    current.Add(line.ToList());
-                }
-                else
-                {
-                    yield return new Grid(current);
-                    current = new();
-                }
-            }
-
-            if( current.Count > 0 )
-                yield return new Grid(current);
+            return new Grid<TResult>(
+                data.Select(
+                    arr => arr.Select(selector).ToList()
+                ).ToList()
+            ); ;
         }
 
         public void Print()
@@ -84,20 +97,20 @@ namespace AoC2023.Util
             {
                 for (int x = 0; x < Width; ++x)
                 {
-                    var c = new Grid.Coord(this, x, y);
+                    var c = new Grid<T>.Coord(this, x, y);
                     Console.Write(this[c]);
                 }
                 Console.WriteLine();
             }
         }
 
-        public void InsertRow(int y, char c)
+        public void InsertRow(int y, T c)
         {
             data.Insert(y, Enumerable.Repeat(c, Width).ToList());
             Height += 1;
         }
 
-        public void InsertColumn(int x, char c)
+        public void InsertColumn(int x, T c)
         {
             foreach (var row in data)
             {
@@ -149,7 +162,7 @@ namespace AoC2023.Util
             }
         }
 
-        private ulong ToBits(List<Coord> coords, Func<char, bool> predicate)
+        private ulong ToBits(List<Coord> coords, Func<T, bool> predicate)
         {
             if (coords.Count > 64)
                 throw new InvalidOperationException();
@@ -166,11 +179,11 @@ namespace AoC2023.Util
             return result;
         }
 
-        public ulong RowBits(int y, Func<char, bool> predicate)
+        public ulong RowBits(int y, Func<T, bool> predicate)
         {
             return ToBits(Row(y).ToList(), predicate);
         }
-        public ulong ColumnBits(int x, Func<char, bool> predicate)
+        public ulong ColumnBits(int x, Func<T, bool> predicate)
         {
             return ToBits(Column(x).ToList(), predicate);
         }
@@ -183,25 +196,25 @@ namespace AoC2023.Util
             }
         }
 
-        public char this[Coord p] => Get(p);
+        public T this[Coord p] => Get(p);
 
-        public char Get(Coord p)
+        public T Get(Coord p)
         {
             return data[p.Y][p.X];
         }
-        public void Set(Coord p, char val)
+        public void Set(Coord p, T val)
         {
             data[p.Y][p.X] = val;
         }
 
-        public char Exchange(Coord p, char val)
+        public T Exchange(Coord p, T val)
         {
             var r = Get(p);
             Set(p, val);
             return r;
         }
 
-        public record Coord(Grid Parent, int X, int Y)
+        public record Coord(Grid<T> Parent, int X, int Y)
         {
             public override string ToString()
             {

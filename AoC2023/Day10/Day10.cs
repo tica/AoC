@@ -26,7 +26,7 @@ namespace AoC2023
             Left, Right, Up, Down
         }
 
-        private static (Grid.Coord, Direction) Next(Grid.Coord coord, Direction dir)
+        private static (Grid<char>.Coord, Direction) Next(Grid<char>.Coord coord, Direction dir)
         {
             var v = coord.Parent[coord];
             switch (dir)
@@ -72,11 +72,11 @@ namespace AoC2023
             }
         }
 
-        private static List<(Grid.Coord, Direction)> FindLoop(Grid.Coord start, Direction dir)
+        private static List<(Grid<char>.Coord, Direction)> FindLoop(Grid<char>.Coord start, Direction dir)
         {
             var p = start;
 
-            var list = new List<(Grid.Coord, Direction)>() { (start, dir) };
+            var list = new List<(Grid<char>.Coord, Direction)>() { (start, dir) };
             do
             {
                 (p, dir) = Next(p, dir);
@@ -90,7 +90,7 @@ namespace AoC2023
 
         protected override object Solve1(string filename)
         {
-            var grid = new Util.Grid(filename);
+            var grid = Util.GridHelper.Load(filename);
             var start = grid.AllCoordinates.Single(c => grid[c] == 'S');
 
             Direction dir = Direction.Right;
@@ -108,13 +108,13 @@ namespace AoC2023
             return loop.Count / 2;
         }
 
-        private void PrintGrid(Util.Grid grid)
+        private void PrintGrid(Util.Grid<char> grid)
         {
             for(int y = 0; y < grid.Height; ++y)
             {
                 for( int x = 0; x < grid.Width; ++x)
                 {
-                    var c = new Grid.Coord(grid, x, y);
+                    var c = new Grid<char>.Coord(grid, x, y);
                     if (c.Parent[c] == 'I')
                         Console.ForegroundColor = ConsoleColor.White;
                     else
@@ -125,7 +125,7 @@ namespace AoC2023
             }
         }
 
-        private static IEnumerable<Grid.Coord> RightSideNeighbors(Grid.Coord p, Direction dir)
+        private static IEnumerable<Grid<char>.Coord> RightSideNeighbors(Grid<char>.Coord p, Direction dir)
         {
             switch(p.Parent[p])
             {
@@ -212,14 +212,14 @@ namespace AoC2023
 
         protected override object Solve2(string filename)
         {
-            var grid = new Util.Grid(filename);
+            var grid = Util.GridHelper.Load(filename);
             var start = grid.AllCoordinates.Single(c => grid[c] == 'S');
 
             grid.Set(start, '7');
 
             var loop = FindLoop(start, Direction.Right);
 
-            var grid2 = new Util.Grid(filename);
+            var grid2 = Util.GridHelper.Load(filename);
             foreach( var p in grid2.AllCoordinates)
             {
                 grid2.Set(p, '.');
@@ -231,7 +231,7 @@ namespace AoC2023
             }
             grid = grid2;
 
-            var inner = new List<Grid.Coord>();
+            var inner = new List<Grid<char>.Coord>();
 
             foreach( var i in loop)
             {
@@ -250,7 +250,7 @@ namespace AoC2023
 
             while (true)
             {
-                var inside = new List<Grid.Coord>();
+                var inside = new List<Grid<char>.Coord>();
                 foreach (var i in inner)
                 {
                     foreach( var n in i.NeighborCoords)

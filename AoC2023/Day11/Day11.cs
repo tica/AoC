@@ -24,7 +24,7 @@ namespace AoC2023
 
         protected override object Solve1(string filename)
         {
-            var grid = new Util.Grid(filename);
+            var grid = Util.GridHelper.Load(filename);
 
             for ( int y = 0; y < grid.Height; ++y)
             {
@@ -70,7 +70,7 @@ namespace AoC2023
 
         protected override object Solve2(string filename)
         {
-            var grid = new Util.Grid(filename);
+            var grid = Util.GridHelper.Load(filename);
 
             List<int> emptyRows = new();
             List<int> emptyColumns = new();

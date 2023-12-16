@@ -44,7 +44,7 @@ namespace AoC2023
             return null;
         }
 
-        private long FindReflections(Util.Grid grid)
+        private long FindReflections(Util.Grid<char> grid)
         {
             int w = grid.Width;
             int h = grid.Height;
@@ -61,7 +61,7 @@ namespace AoC2023
         protected override object Solve1(string filename)
         {
             long sum = 0;
-            foreach (var grid in Util.Grid.LoadMultiple(filename))
+            foreach (var grid in Util.GridHelper.LoadMultiple(filename))
             {
                 var rc = FindReflections(grid);
                 sum += rc;
@@ -90,7 +90,7 @@ namespace AoC2023
             return null;
         }
 
-        private long FindDefectiveReflections(Util.Grid grid)
+        private long FindDefectiveReflections(Util.Grid<char> grid)
         {
             int w = grid.Width;
             int h = grid.Height;
@@ -107,7 +107,7 @@ namespace AoC2023
         protected override object Solve2(string filename)
         {
             long sum = 0;
-            foreach (var grid in Util.Grid.LoadMultiple(filename))
+            foreach (var grid in Util.GridHelper.LoadMultiple(filename))
             {
                 var rc = FindDefectiveReflections(grid);
                 sum += rc;
