@@ -119,6 +119,24 @@ namespace AoC2023.Util
             }
         }
 
+        public void Print(Func<Coord, ConsoleColor> colorSelector)
+        {
+            var oldColor = Console.ForegroundColor;
+
+            for (int y = 0; y < Height; ++y)
+            {
+                for (int x = 0; x < Width; ++x)
+                {
+                    var c = new Grid<T>.Coord(this, x, y);
+                    Console.ForegroundColor = colorSelector(c);
+                    Console.Write(c.Value);
+                }
+                Console.WriteLine();
+            }
+
+            Console.ForegroundColor = oldColor;
+        }
+
         public void Print(Func<T, char> selector)
         {
             for (int y = 0; y < Height; ++y)
@@ -248,6 +266,32 @@ namespace AoC2023.Util
             return r;
         }
 
+        public IEnumerable<Coord> Between(Coord p1, Coord p2)
+        {
+            if (p1.Y == p2.Y)
+            {
+                var x1 = Math.Min(p1.X, p2.X);
+                var x2 = Math.Max(p1.X, p2.X);
+                for (int x = x1 + 1; x < x2; ++x)
+                {
+                    yield return new Coord(this, x, p1.Y);
+                }
+            }
+            else if (p1.X == p2.X)
+            {
+                var y1 = Math.Min(p1.Y, p2.Y);
+                var y2 = Math.Max(p1.Y, p2.Y);
+                for (int y = y1 + 1; y < y2; ++y)
+                {
+                    yield return new Coord(this, p1.X, y);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Not on the samw row/col");
+            }
+        }
+
         public record Coord(Grid<T> Parent, int X, int Y)
         {
             public override string ToString()
@@ -258,6 +302,8 @@ namespace AoC2023.Util
             public static Coord Invalid = new Coord(null!, 0, 0);
 
             public bool IsValid => Parent != null;
+
+            public T Value => Parent[this];
 
             public bool IsLeftBorder => X == 0;
             public bool IsRightBorder => X == Parent.Width - 1;
