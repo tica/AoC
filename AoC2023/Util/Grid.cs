@@ -106,6 +106,14 @@ namespace AoC2023.Util
             return new Coord(this, x, y);
         }
 
+        public Coord TopLeft => Pos(0, 0);
+        public Coord BottomRight => Pos(Width - 1, Height - 1);
+
+        public int Distance(Coord a, Coord b)
+        {
+            return Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
+        }
+
         public void Print()
         {
             for (int y = 0; y < Height; ++y)

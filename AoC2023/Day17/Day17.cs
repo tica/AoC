@@ -10,70 +10,9 @@ namespace AoC2023
         public Day17(): base(17) { }
 
         public override object SolutionExample1 => 102;
-
         public override object SolutionPuzzle1 => 1238;
-
         public override object SolutionExample2 => 94;
-
         public override object SolutionPuzzle2 => 1362;
-
-        private static IEnumerable<Direction> AllowedDirections(Direction dir, int stepsInSameDirection)
-        {
-            switch(dir)
-            {
-                case Direction.Left:
-                case Direction.Right:
-                    yield return Direction.Up;
-                    yield return Direction.Down;
-                    break;
-                case Direction.Up:
-                case Direction.Down:
-                    yield return Direction.Left;
-                    yield return Direction.Right;
-                    break;
-                default:
-                    throw new NotImplementedException();
-            }
-            if (stepsInSameDirection < 3)
-                yield return dir;
-        }
-
-        private (List<Coord>?, int) FindMinimalPath(Grid grid, Coord p, Direction dir, int stepsInSameDirection, List<Coord> path)
-        {
-            var result = new List<Coord>() { p };
-            var thisCost = grid[p];
-
-            if (p.X == grid.Width - 1 && p.Y == grid.Height - 1)
-            {
-                return (result, thisCost);
-            }
-
-            var allowedDirections = AllowedDirections(dir, stepsInSameDirection);
-
-            int minimalCost = int.MaxValue;
-            List<Coord>? minimalPath = null;
-
-            foreach (var (next, d, sd) in allowedDirections
-                .Where(d => p.Neighbor(d).IsValid)
-                .Select(d => (p.Neighbor(d), d, (d != dir) ? 0 : stepsInSameDirection + 1)))
-            {
-                if (path.Contains(next))
-                    continue;
-
-                var (sub, c) = FindMinimalPath(grid, next, d, sd, path.Concat(new[] { next }).ToList());
-                if( sub != null && c < minimalCost )
-                {
-                    minimalCost = c;
-                    minimalPath = sub;
-                }
-            }
-
-            if (minimalPath == null)
-                return (null, 0);
-
-            return (result.Concat(minimalPath).ToList(), thisCost + minimalCost);
-        }
-
 
         enum NodeDirection
         {
@@ -98,54 +37,39 @@ namespace AoC2023
 
             public static Node Any(Coord pos) => new Node(pos, NodeDirection.Any);
 
+            private static IEnumerable<(Node, int)> EnumSteps(Coord p, NodeDirection newMode, Direction dir)
+            {
+                int cost = 0;
+                for (int i = 0; i < MaxMove; ++i)
+                {
+                    p = p.Neighbor(dir);
+                    if (!p.IsValid)
+                        yield break;
+
+                    cost += p.Value;
+                    if (i >= MinMove - 1)
+                        yield return (new Node(p, newMode), cost);
+                }
+            }
+
             public IEnumerable<(Node, int)> WeightedNeighbors
             {
                 get
                 {
+                    var result = Enumerable.Empty<(Node, int)>();
+
                     if (Mode == NodeDirection.Horizontal || Mode == NodeDirection.Any)
                     {
-                        var p = Position;
-                        int cost = 0;
-                        for (int i = 0; i < MaxMove && !p.IsLeftBorder; ++i)
-                        {
-                            p = p.Left;
-                            cost += p.Value;
-                            if (i >= MinMove - 1)
-                                yield return (new Node(p, NodeDirection.Vertical), cost);
-                        }
-
-                        p = Position;
-                        cost = 0;
-                        for (int i = 0; i < MaxMove  && !p.IsRightBorder; ++i)
-                        {
-                            p = p.Right;
-                            cost += p.Value;
-                            if (i >= MinMove - 1)
-                                yield return (new Node(p, NodeDirection.Vertical), cost);
-                        }
+                        result = result.Concat(EnumSteps(Position, NodeDirection.Vertical, Direction.Left));
+                        result = result.Concat(EnumSteps(Position, NodeDirection.Vertical, Direction.Right));
                     }
-                    if( Mode == NodeDirection.Vertical || Mode == NodeDirection.Any)
+                    if (Mode == NodeDirection.Vertical || Mode == NodeDirection.Any)
                     {
-                        var p = Position;
-                        int cost = 0;
-                        for (int i = 0; i < MaxMove  && !p.IsTopBorder; ++i)
-                        {
-                            p = p.Top;
-                            cost += p.Value;
-                            if (i >= MinMove - 1)
-                                yield return (new Node(p, NodeDirection.Horizontal), cost);
-                        }
-
-                        p = Position;
-                        cost = 0;
-                        for (int i = 0; i < MaxMove && !p.IsBottomBorder; ++i)
-                        {
-                            p = p.Bottom;
-                            cost += p.Value;
-                            if (i >= MinMove - 1)
-                                yield return (new Node(p, NodeDirection.Horizontal), cost);
-                        }
+                        result = result.Concat(EnumSteps(Position, NodeDirection.Horizontal, Direction.Up));
+                        result = result.Concat(EnumSteps(Position, NodeDirection.Horizontal, Direction.Down));
                     }
+
+                    return result;
                 }
             }
 
@@ -183,10 +107,10 @@ namespace AoC2023
             var grid = Util.GridHelper.Load(filename).Transform(x => int.Parse(x.ToString()));
 
             var nodePath = Util.AStar.FindPath(
-                Node.Any(grid.Pos(0, 0)),
-                Node.Any(grid.Pos(grid.Width - 1, grid.Height - 1)),
+                Node.Any(grid.TopLeft),
+                Node.Any(grid.BottomRight),
                 n => n.WeightedNeighbors,
-                n => (grid.Width - 1 - n.Position.X) + (grid.Height - 1 - n.Position.Y)
+                n => grid.Distance(n.Position, grid.BottomRight)
             );
 
             var path = new List<Coord>() { nodePath[0].Position };
