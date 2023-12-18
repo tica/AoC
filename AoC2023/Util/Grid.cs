@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -58,6 +59,17 @@ namespace AoC2023.Util
             data = d;
             Width = data[0].Count;
             Height = data.Count;
+        }
+
+        public Grid(int w, int h, T val)
+        {
+            data = new();
+            for (int y = 0; y < h; ++y)
+            {
+                data.Add(Enumerable.Repeat(val, w).ToList());
+            }
+            Width = w;
+            Height = h;
         }
 
         public Grid<T> Clone()
