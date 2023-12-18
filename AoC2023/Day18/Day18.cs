@@ -14,10 +14,10 @@ namespace AoC2023
     {
         public Day18(): base(18) { }
 
-        public override object SolutionExample1 => throw new NotImplementedException();
-        public override object SolutionPuzzle1 => throw new NotImplementedException();
-        public override object SolutionExample2 => throw new NotImplementedException();
-        public override object SolutionPuzzle2 => throw new NotImplementedException();
+        public override object SolutionExample1 => 62L;
+        public override object SolutionPuzzle1 => 42317L;
+        public override object SolutionExample2 => 952408144115L;
+        public override object SolutionPuzzle2 => 83605563360288L;
 
         private static Direction ToDirection(string dir)
         {
@@ -44,29 +44,6 @@ namespace AoC2023
             }
         }
 
-        class Event
-        {
-            public bool Begin;
-            public Wall Wall;
-
-            public long X => Begin ? Wall.X0 : Wall.X1;
-
-            public override string ToString()
-            {
-                return $"{X}: {(Begin ? "Begin" : "End")} {Wall}";
-            }
-        }
-
-        private bool InsideActive(List<Wall> walls, long y)
-        {
-            for (int i = 0; i < walls.Count; i += 2)
-            {
-                if (y > walls[i].Y && y < walls[i + 1].Y)
-                    return true;
-            }
-            return false;
-        }
-
         record struct Command(Direction Dir, int Distance)
         {
             public static Command Parse(string line)
@@ -74,6 +51,18 @@ namespace AoC2023
                 var m = Regex.Match(line, @"([RLDU]) (\d+) \(#([a-f0-9]+)\)");
                 var dir = ToDirection(m.Groups[1].Value);
                 var dist = int.Parse(m.Groups[2].Value);
+                return new Command { Dir = dir, Distance = dist };
+            }
+
+            public static Command Parse2(string line)
+            {
+                var m = Regex.Match(line, @"([RLDU]) (\d+) \(#([a-f0-9]+)\)");
+
+                var dist = int.Parse(m.Groups[3].Value.Substring(0, 5), System.Globalization.NumberStyles.HexNumber);
+
+                var dc = (m.Groups[3].Value[5]);
+                Direction dir = (dc == '0') ? Direction.Right : ((dc == '1') ? Direction.Down : ((dc == '2') ? Direction.Left : Direction.Up));
+                
                 return new Command { Dir = dir, Distance = dist };
             }
         }
@@ -109,20 +98,18 @@ namespace AoC2023
                 return new Range(begin, end - begin);
             }
 
-            public Range Subtract(Range other)
+            public IEnumerable<Range> Subtract(Range other)
             {
                 if (!Intersects(other))
                     throw new Exception("No intersection");
 
-                if( other.Begin <= Begin )
+                if( other.Begin > Begin)
                 {
-                    var begin = Math.Min(End, other.End);
-                    return new Range(begin, End - begin);
+                    yield return new Range(Begin, other.Begin - Begin);
                 }
-                else
+                if( other.End < End)
                 {
-                    var end = Math.Min(End, other.Begin);
-                    return new Range(Begin, end - Begin);
+                    yield return new Range(other.End, End - other.End);
                 }
             }
         }
@@ -145,9 +132,7 @@ namespace AoC2023
                 {
                     if (x.Intersects(r))
                     {
-                        var xr = x.Subtract(r);
-                        if( xr.Length > 0 )
-                            result.Add(xr);
+                        result.AddRange(x.Subtract(r));
                     }
                     else
                     {
@@ -183,18 +168,14 @@ namespace AoC2023
             }
         }
 
-        protected override object Solve1(string filename)
+        private long Solve(List<Command> commands)
         {
-            long px = 18;
-            long py = 289;
-
-            var template = System.IO.File.ReadAllLines("Day18/template.txt").ToList();
+            long px = 0;
+            long py = 0;
 
             var bounds = new List<Wall>();
 
-            var commands = System.IO.File.ReadAllLines(filename).Select(Command.Parse).ToList();
-
-            for( int i = 0; i < commands.Count; ++i)
+            for (int i = 0; i < commands.Count; ++i)
             {
                 var cmd = commands[i];
 
@@ -219,7 +200,7 @@ namespace AoC2023
 
             bounds = bounds.OrderBy(w => w.Y).OrderBy(w => w.X0).ToList();
 
-            var hwalls = bounds.OrderBy(w => w.Upper ? 0 : 1).OrderBy(w => w.Y).ToList();
+            IEnumerable<Wall> hwalls = bounds.OrderBy(w => w.Upper ? 0 : 1).OrderBy(w => w.Y).ToList();
 
             var minX = hwalls.Min(w => w.X0);
             var maxX = hwalls.Max(w => w.X1);
@@ -230,35 +211,19 @@ namespace AoC2023
 
             var open = new RangeList();
 
-            for( var y = minY; y <= maxY; y++ )
+            for (var y = minY; y <= maxY; y++)
             {
                 while (hwalls.Any() && hwalls.First().Y == y && hwalls.First().Upper)
                 {
                     var w = hwalls.First();
                     var wr = new Range(w.X0, w.X1 - w.X0);
                     open.Add(wr);
-                    hwalls = hwalls.Skip(1).ToList();
+                    hwalls = hwalls.Skip(1);
                 }
 
-                long rowArea = 0;
-                Console.Write($"Line {y+1}: ");
                 foreach (var r in open.Ranges)
                 {
-                    rowArea += r.Length + 1;
-                    Console.Write($"{r.Begin}..{r.End} ");
-                }
-                Console.WriteLine($"-> {rowArea}");
-
-                area += rowArea;
-
-                if (filename.Contains("input"))
-                {
-                    var templateRowArea = template[(int)y].Count(c => c != '.');
-
-                    if (rowArea != templateRowArea)
-                    {
-                        Debugger.Break();
-                    }
+                    area += r.Length + 1;
                 }
 
                 while (hwalls.Any() && hwalls.First().Y == y)
@@ -266,16 +231,25 @@ namespace AoC2023
                     var w = hwalls.First();
                     var wr = new Range(w.X0, w.X1 - w.X0);
                     open.Subtract(wr);
-                    hwalls = hwalls.Skip(1).ToList();
+                    hwalls = hwalls.Skip(1);
                 }
             }
 
             return area;
         }
 
+        protected override object Solve1(string filename)
+        {
+            var commands = System.IO.File.ReadAllLines(filename).Select(Command.Parse).ToList();
+
+            return Solve(commands);
+        }
+
         protected override object Solve2(string filename)
         {
-            throw new NotImplementedException();
+            var commands = System.IO.File.ReadAllLines(filename).Select(Command.Parse2).ToList();
+
+            return Solve(commands);
         }
     }
 }
