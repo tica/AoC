@@ -1,8 +1,11 @@
 ﻿using AoC2023.Util;
 using System;
+using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using Grid = AoC2023.Util.Grid<char>;
 
 namespace AoC2023
@@ -28,214 +31,234 @@ namespace AoC2023
             throw new Exception("oops");
         }
 
-        private static char FindCorner(Direction prev, Direction next)
+        class Wall
         {
-            switch(prev)
+            public bool Upper;
+            public long Y;
+            public long X0;
+            public long X1;
+
+            public override string ToString()
             {
-                case Direction.Up:
-                    switch(next)
-                    {
-                        case Direction.Up: return '|';
-                        case Direction.Left: return '7';
-                        case Direction.Right: return 'F';
-                        default: throw new Exception("oops");
-                    }
-                case Direction.Down:
-                    switch (next)
-                    {
-                        case Direction.Down: return '|';
-                        case Direction.Left: return 'J';
-                        case Direction.Right: return 'L';
-                        default: throw new Exception("oops");
-                    }
-                case Direction.Right:
-                    switch (next)
-                    {
-                        case Direction.Right: return '-';
-                        case Direction.Down: return '7';
-                        case Direction.Up: return 'J';
-                        default: throw new Exception("oops");
-                    }
-                case Direction.Left:
-                    switch (next)
-                    {
-                        case Direction.Left: return '-';
-                        case Direction.Down: return 'F';
-                        case Direction.Up: return 'L';
-                        default: throw new Exception("oops");
-                    }
-                default: throw new Exception("oops");
-            }
-        }
-        private static char FindWall(Direction dir)
-        {
-            switch(dir)
-            {
-                case Direction.Left:
-                case Direction.Right:
-                    return '-';
-                case Direction.Up:
-                case Direction.Down:
-                    return '|';
-                default: throw new Exception("oops");
+                return $"{(Upper ? 'U' : 'L')} X{X0}..{X1} Y{Y}";
             }
         }
 
-        private static IEnumerable<Grid<char>.Coord> RightSideNeighbors(Grid.Coord p, Direction dir)
+        class Event
         {
-            switch (p.Parent[p])
+            public bool Begin;
+            public Wall Wall;
+
+            public long X => Begin ? Wall.X0 : Wall.X1;
+
+            public override string ToString()
             {
-                case '|':
-                    switch (dir)
+                return $"{X}: {(Begin ? "Begin" : "End")} {Wall}";
+            }
+        }
+
+        private bool InsideActive(List<Wall> walls, long y)
+        {
+            for (int i = 0; i < walls.Count; i += 2)
+            {
+                if (y > walls[i].Y && y < walls[i + 1].Y)
+                    return true;
+            }
+            return false;
+        }
+
+        record struct Command(Direction Dir, int Distance)
+        {
+            public static Command Parse(string line)
+            {
+                var m = Regex.Match(line, @"([RLDU]) (\d+) \(#([a-f0-9]+)\)");
+                var dir = ToDirection(m.Groups[1].Value);
+                var dist = int.Parse(m.Groups[2].Value);
+                return new Command { Dir = dir, Distance = dist };
+            }
+        }
+
+        record class Range(long Begin, long Length)
+        {
+            public long End => Begin + Length;
+
+            public bool Contains(long val) => val >= Begin && val < End;
+
+            public Range Intersect(Range other)
+            {
+                var begin = Math.Max(Begin, other.Begin);
+                var end = Math.Min(End, other.End);
+                if (begin >= end)
+                    throw new Exception("No intersection");
+
+                return new Range(begin, end - begin);
+            }
+
+            public bool Intersects(Range other)
+            {
+                var begin = Math.Max(Begin, other.Begin);
+                var end = Math.Min(End, other.End);
+                return (begin < end);
+            }
+
+            public Range Merge(Range other)
+            {
+                var begin = Math.Min(Begin, other.Begin);
+                var end = Math.Max(End, other.End);
+
+                return new Range(begin, end - begin);
+            }
+
+            public Range Subtract(Range other)
+            {
+                if (!Intersects(other))
+                    throw new Exception("No intersection");
+
+                if( other.Begin <= Begin )
+                {
+                    var begin = Math.Min(End, other.End);
+                    return new Range(begin, End - begin);
+                }
+                else
+                {
+                    var end = Math.Min(End, other.Begin);
+                    return new Range(Begin, end - Begin);
+                }
+            }
+        }
+
+        class RangeList
+        {
+            public List <Range> Ranges { get; private set; } = new List <Range>();
+
+            public void Add(Range r)
+            {
+                Ranges.Add(r);
+                Consolidate();
+            }
+
+            public void Subtract(Range r)
+            {
+                var result = new List<Range>();
+
+                foreach (var x in Ranges)
+                {
+                    if (x.Intersects(r))
                     {
-                        case Direction.Down:
-                            yield return p.Left;
-                            yield break;
-                        case Direction.Up:
-                            yield return p.Right;
-                            yield break;
-                        default:
-                            throw new Exception("oops");
+                        var xr = x.Subtract(r);
+                        if( xr.Length > 0 )
+                            result.Add(xr);
                     }
-                case '-':
-                    switch (dir)
+                    else
                     {
-                        case Direction.Left:
-                            yield return p.Top;
-                            yield break;
-                        case Direction.Right:
-                            yield return p.Bottom;
-                            yield break;
-                        default:
-                            throw new Exception("oops");
+                        result.Add(x);
                     }
-                case '7':
-                    switch (dir)
+                }
+
+                Ranges = result;
+            }
+
+            private void Consolidate()
+            {
+                Ranges = Ranges.OrderBy(r => r.Begin).ToList();
+
+                var result = new List<Range>();
+
+                var open = Ranges.First();
+                foreach (var r in Ranges.Skip(1))
+                {
+                    if( r.Intersects(open) || r.Begin == open.End )
                     {
-                        case Direction.Up:
-                            yield return p.Right;
-                            yield return p.TopRight;
-                            yield return p.Top;
-                            yield break;
-                        case Direction.Right:
-                            yield break;
-                        default:
-                            throw new Exception("oops");
+                        open = open.Merge(r);
                     }
-                case 'L':
-                    switch (dir)
+                    else
                     {
-                        case Direction.Down:
-                            yield return p.Left;
-                            yield return p.BottomLeft;
-                            yield return p.Bottom;
-                            yield break;
-                        case Direction.Left:
-                            yield break;
-                        default:
-                            throw new Exception("oops");
+                        result.Add(open);
+                        open = r;
                     }
-                case 'J':
-                    switch (dir)
-                    {
-                        case Direction.Down:
-                            yield break;
-                        case Direction.Right:
-                            yield return p.Bottom;
-                            yield return p.BottomRight;
-                            yield return p.Right;
-                            yield break;
-                        default:
-                            throw new Exception("oops");
-                    }
-                case 'F':
-                    switch (dir)
-                    {
-                        case Direction.Up:
-                            yield break;
-                        case Direction.Left:
-                            yield return p.Top;
-                            yield return p.TopLeft;
-                            yield return p.Left;
-                            yield break;
-                        default:
-                            throw new Exception("oops");
-                    }
-                default:
-                    throw new Exception($"oops: {p.Parent[p]}");
+                }
+                result.Add(open);
+
+                Ranges = result;
             }
         }
 
         protected override object Solve1(string filename)
         {
-            var grid = new Grid(265, 341, '.');
+            long px = 0;
+            long py = 0;
 
-            var pos = grid.Pos(17, 289);
+            var bounds = new List<Wall>();
 
-            Direction prevDir = Direction.Right;
+            var commands = System.IO.File.ReadAllLines(filename).Select(Command.Parse).ToList();
 
-            var path = new List<(Grid.Coord, Direction)>();
-
-            foreach ( var line in System.IO.File.ReadAllLines(filename) )
+            for( int i = 0; i < commands.Count; ++i)
             {
-                var m = Regex.Match(line, @"([RLDU]) (\d+) \(#([a-f0-9]+)\)");
-                var dir = ToDirection(m.Groups[1].Value);
-                var dist = int.Parse(m.Groups[2].Value);
+                var cmd = commands[i];
 
-                var c = FindCorner(prevDir, dir);
-                prevDir = dir;
-                grid.Set(pos, c);
-
-                for ( int i = 0; i < dist; i++ )
+                switch (commands[i].Dir)
                 {
-                    pos = pos.Neighbor(dir);
-
-                    var w = FindWall(dir);
-                    grid.Set(pos, w);
-
-                    path.Add((pos, dir));
+                    case Direction.Up:
+                        py -= cmd.Distance;
+                        break;
+                    case Direction.Down:
+                        py += cmd.Distance;
+                        break;
+                    case Direction.Right:
+                        px += cmd.Distance;
+                        bounds.Add(new Wall { Upper = true, Y = py, X0 = px - cmd.Distance, X1 = px });
+                        break;
+                    case Direction.Left:
+                        px -= cmd.Distance;
+                        bounds.Add(new Wall { Upper = false, Y = py, X0 = px, X1 = px + cmd.Distance });
+                        break;
                 }
             }
 
-            var inner = new List<Grid<char>.Coord>();
+            bounds = bounds.OrderBy(w => w.Y).OrderBy(w => w.X0).ToList();
 
-            foreach (var (p,d) in path)
+            var hwalls = bounds.OrderBy(w => w.Upper ? 0 : 1).OrderBy(w => w.Y).ToList();
+
+            var minX = hwalls.Min(w => w.X0);
+            var maxX = hwalls.Max(w => w.X1);
+            var minY = hwalls.Min(w => w.Y);
+            var maxY = hwalls.Max(w => w.Y);
+
+            long area = 0;
+
+            var open = new RangeList();
+
+            for( var y = minY; y <= maxY; y++ )
             {
-
-                foreach (var n in RightSideNeighbors(p, d))
+                while (hwalls.Any() && hwalls.First().Y == y && hwalls.First().Upper)
                 {
-                    if (grid[n] == '.')
-                    {
-                        grid.Set(n, 'I');
-                        inner.Add(n);
-                    }
+                    var w = hwalls.First();
+                    var wr = new Range(w.X0, w.X1 - w.X0);
+                    open.Add(wr);
+                    hwalls = hwalls.Skip(1).ToList();
+                }
+
+                long rowArea = 0;
+                Console.Write($"Line {y}: ");
+                foreach (var r in open.Ranges)
+                {
+                    rowArea += r.Length + 1;
+                    Console.Write($"{r.Begin}..{r.End} ");
+                }
+                Console.WriteLine($"-> {rowArea}");
+
+                area += rowArea;
+
+                while (hwalls.Any() && hwalls.First().Y == y)
+                {
+                    var w = hwalls.First();
+                    var wr = new Range(w.X0, w.X1 - w.X0);
+                    open.Subtract(wr);
+                    hwalls = hwalls.Skip(1).ToList();
                 }
             }
 
-            while (true)
-            {
-                var inside = new List<Grid<char>.Coord>();
-                foreach (var i in inner)
-                {
-                    foreach (var n in i.NeighborCoords)
-                    {
-                        if (grid[n] == '.')
-                        {
-                            grid.Set(n, 'I');
-                            inside.Add(n);
-                        }
-                    }
-                }
-
-                if (!inside.Any())
-                    break;
-
-                inner.AddRange(inside);
-            }
-
-            //grid.Print();
-
-            return inner.Count + path.Count;
+            return area;
         }
 
         protected override object Solve2(string filename)
