@@ -185,8 +185,10 @@ namespace AoC2023
 
         protected override object Solve1(string filename)
         {
-            long px = 0;
-            long py = 0;
+            long px = 18;
+            long py = 289;
+
+            var template = System.IO.File.ReadAllLines("Day18/template.txt").ToList();
 
             var bounds = new List<Wall>();
 
@@ -239,7 +241,7 @@ namespace AoC2023
                 }
 
                 long rowArea = 0;
-                Console.Write($"Line {y}: ");
+                Console.Write($"Line {y+1}: ");
                 foreach (var r in open.Ranges)
                 {
                     rowArea += r.Length + 1;
@@ -248,6 +250,16 @@ namespace AoC2023
                 Console.WriteLine($"-> {rowArea}");
 
                 area += rowArea;
+
+                if (filename.Contains("input"))
+                {
+                    var templateRowArea = template[(int)y].Count(c => c != '.');
+
+                    if (rowArea != templateRowArea)
+                    {
+                        Debugger.Break();
+                    }
+                }
 
                 while (hwalls.Any() && hwalls.First().Y == y)
                 {
