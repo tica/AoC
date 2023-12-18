@@ -5,8 +5,9 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+
 using Grid = AoC2023.Util.Grid<char>;
+using Range = AoC2023.Util.Range;
 
 namespace AoC2023
 {
@@ -67,107 +68,6 @@ namespace AoC2023
             }
         }
 
-        record class Range(long Begin, long Length)
-        {
-            public long End => Begin + Length;
-
-            public bool Contains(long val) => val >= Begin && val < End;
-
-            public Range Intersect(Range other)
-            {
-                var begin = Math.Max(Begin, other.Begin);
-                var end = Math.Min(End, other.End);
-                if (begin >= end)
-                    throw new Exception("No intersection");
-
-                return new Range(begin, end - begin);
-            }
-
-            public bool Intersects(Range other)
-            {
-                var begin = Math.Max(Begin, other.Begin);
-                var end = Math.Min(End, other.End);
-                return (begin < end);
-            }
-
-            public Range Merge(Range other)
-            {
-                var begin = Math.Min(Begin, other.Begin);
-                var end = Math.Max(End, other.End);
-
-                return new Range(begin, end - begin);
-            }
-
-            public IEnumerable<Range> Subtract(Range other)
-            {
-                if (!Intersects(other))
-                    throw new Exception("No intersection");
-
-                if( other.Begin > Begin)
-                {
-                    yield return new Range(Begin, other.Begin - Begin);
-                }
-                if( other.End < End)
-                {
-                    yield return new Range(other.End, End - other.End);
-                }
-            }
-        }
-
-        class RangeList
-        {
-            public List <Range> Ranges { get; private set; } = new List <Range>();
-
-            public void Add(Range r)
-            {
-                Ranges.Add(r);
-                Consolidate();
-            }
-
-            public void Subtract(Range r)
-            {
-                var result = new List<Range>();
-
-                foreach (var x in Ranges)
-                {
-                    if (x.Intersects(r))
-                    {
-                        result.AddRange(x.Subtract(r));
-                    }
-                    else
-                    {
-                        result.Add(x);
-                    }
-                }
-
-                Ranges = result;
-            }
-
-            private void Consolidate()
-            {
-                Ranges = Ranges.OrderBy(r => r.Begin).ToList();
-
-                var result = new List<Range>();
-
-                var open = Ranges.First();
-                foreach (var r in Ranges.Skip(1))
-                {
-                    if( r.Intersects(open) || r.Begin == open.End )
-                    {
-                        open = open.Merge(r);
-                    }
-                    else
-                    {
-                        result.Add(open);
-                        open = r;
-                    }
-                }
-                result.Add(open);
-
-                Ranges = result;
-            }
-        }
-
         private long Solve(List<Command> commands)
         {
             long px = 0;
@@ -175,11 +75,9 @@ namespace AoC2023
 
             var bounds = new List<Wall>();
 
-            for (int i = 0; i < commands.Count; ++i)
+            foreach(var cmd in commands)
             {
-                var cmd = commands[i];
-
-                switch (commands[i].Dir)
+                switch (cmd.Dir)
                 {
                     case Direction.Up:
                         py -= cmd.Distance;
@@ -202,8 +100,6 @@ namespace AoC2023
 
             IEnumerable<Wall> hwalls = bounds.OrderBy(w => w.Upper ? 0 : 1).OrderBy(w => w.Y).ToList();
 
-            var minX = hwalls.Min(w => w.X0);
-            var maxX = hwalls.Max(w => w.X1);
             var minY = hwalls.Min(w => w.Y);
             var maxY = hwalls.Max(w => w.Y);
 
@@ -211,14 +107,16 @@ namespace AoC2023
 
             var open = new RangeList();
 
+            var enumerator = hwalls.GetEnumerator();
+            enumerator.MoveNext();
+
             for (var y = minY; y <= maxY; y++)
             {
-                while (hwalls.Any() && hwalls.First().Y == y && hwalls.First().Upper)
+                while (enumerator.Current != null && enumerator.Current.Y == y && enumerator.Current.Upper)
                 {
-                    var w = hwalls.First();
-                    var wr = new Range(w.X0, w.X1 - w.X0);
-                    open.Add(wr);
-                    hwalls = hwalls.Skip(1);
+                    var w = enumerator.Current;
+                    open.Add(new Range(w.X0, w.X1 - w.X0));
+                    enumerator.MoveNext();
                 }
 
                 foreach (var r in open.Ranges)
@@ -226,12 +124,11 @@ namespace AoC2023
                     area += r.Length + 1;
                 }
 
-                while (hwalls.Any() && hwalls.First().Y == y)
+                while (enumerator.Current != null && enumerator.Current.Y == y)
                 {
-                    var w = hwalls.First();
-                    var wr = new Range(w.X0, w.X1 - w.X0);
-                    open.Subtract(wr);
-                    hwalls = hwalls.Skip(1);
+                    var w = enumerator.Current;
+                    open.Subtract(new Range(w.X0, w.X1 - w.X0));
+                    enumerator.MoveNext();
                 }
             }
 
