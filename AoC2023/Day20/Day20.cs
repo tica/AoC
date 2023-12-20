@@ -15,10 +15,10 @@ namespace AoC2023
     {
         public Day20(): base(20) { }
 
-        public override object SolutionExample1 => throw new NotImplementedException();
-        public override object SolutionPuzzle1 => throw new NotImplementedException();
-        public override object SolutionExample2 => throw new NotImplementedException();
-        public override object SolutionPuzzle2 => throw new NotImplementedException();
+        public override object SolutionExample1 => 11687500L;
+        public override object SolutionPuzzle1 => 944750144L;
+        public override object SolutionExample2 => 0L;
+        public override object SolutionPuzzle2 => 222718819437131L;
 
         enum Type
         {
@@ -32,6 +32,10 @@ namespace AoC2023
         {
             private Dictionary<string, bool> Sources = new();
             public bool State { get; internal set; }
+            public long LowCount { get; internal set; }
+
+            public List<Module> TargetLinks { get; } = new();
+            public List<Module> SourceLinks { get; } = new();
 
             public static Module Parse(string input)
             {
@@ -48,14 +52,29 @@ namespace AoC2023
                 Sources[name] = false;
             }
 
-            public IEnumerable<(string From, bool Val, string To)> Pulse(bool v, string source)
+            public void ResolveTargetLinks(Dictionary<string, Module> modules)
             {
-                switch(Type)
+                foreach( var t in Targets)
+                {
+                    TargetLinks.Add(modules[t]);
+                }
+                foreach( var (n,v) in Sources)
+                {
+                    SourceLinks.Add(modules[n]);
+                }
+            }
+
+            public IEnumerable<(string From, bool Val, Module To)> Pulse(bool v, string source)
+            {
+                if (!v)
+                    LowCount += 1;
+
+                switch (Type)
                 {
                     case Type.Broadcaster:
-                        foreach( var t in Targets)
+                        foreach( var t in TargetLinks)
                         {
-                            //Console.WriteLine($"{Name} -{v}-> {t}");
+                            //Console.WriteLine($"{Name} -{v}-> {t.Name}");
                             yield return (Name, v, t);
                         }
                         break;
@@ -63,23 +82,27 @@ namespace AoC2023
                         if (v)
                             yield break;
                         State = !State;
-                        foreach (var t in Targets)
+                        foreach (var t in TargetLinks)
                         {
-                            //Console.WriteLine($"{Name} -{State}-> {t}");
+                            //Console.WriteLine($"%{Name} -{State}-> {t.Name}");
                             yield return (Name, State, t);
                         }
                         break;
                     case Type.Conjunction:
                         Sources[source] = v;
+                        //foreach (var (sn, sv) in Sources)
+                        //{
+                        //    Console.Write($"[{sn}] = {sv} ");
+                        //}
+                        //Console.WriteLine();
                         var p = !Sources.Values.All(v => v == true);
-                        foreach (var t in Targets)
+                        foreach (var t in TargetLinks)
                         {
-                            //Console.WriteLine($"{Name} -{p}-> {t}");
+                            //Console.WriteLine($"&{Name} -{p}-> {t.Name}");
                             yield return (Name, p, t);
                         }
                         break;
                     case Type.Output:
-                        State = v;
                         break;
                     default:
                         throw new Exception("oops");
@@ -96,14 +119,18 @@ namespace AoC2023
             var rx= new Module(Type.Output, "rx", new());
             modules["rx"] = output;
 
-            var bc = modules["broadcaster"];
+            var broadcaster = modules["broadcaster"];
 
-            foreach( var (n,m) in modules)
+            foreach (var (n, m) in modules)
             {
-                foreach( var t in m.Targets)
+                foreach (var t in m.Targets)
                 {
                     modules[t].RegisterInput(m.Name);
                 }
+            }
+            foreach(var (n,m) in modules)
+            {
+                m.ResolveTargetLinks(modules);
             }
 
             long numLow = 0;
@@ -113,14 +140,14 @@ namespace AoC2023
             {
                 //Console.WriteLine($"Push {i}:");
 
-                Queue<(string from, bool val, string to)> active = new();
-                active.Enqueue(("button", false, "broadcaster"));
+                Queue<(string from, bool val, Module to)> active = new();
+                active.Enqueue(("button", false, broadcaster));
 
                 while (active.Any())
                 {
                     var (from, val, to) = active.Dequeue();
 
-                    foreach (var t in modules[to].Pulse(val, from))
+                    foreach (var t in to.Pulse(val, from))
                     {
                         active.Enqueue(t);
                     }
@@ -135,16 +162,52 @@ namespace AoC2023
             return numLow * numHigh;
         }
 
+        static long LCM(long[] numbers)
+        {
+            return numbers.Aggregate(lcm);
+        }
+        static long lcm(long a, long b)
+        {
+            return Math.Abs(a * b) / GCD(a, b);
+        }
+        static long GCD(long a, long b)
+        {
+            return b == 0 ? a : GCD(b, a % b);
+        }
+
+
+        private long CalcPeriod(Module m)
+        {
+            switch(m.Type)
+            {
+                case Type.Output:
+                    return CalcPeriod(m.SourceLinks.Single());
+                case Type.FlipFlop:
+                    var periods = m.SourceLinks.Select(m => CalcPeriod(m)).ToArray();
+                    var freqs = periods.Select(p => 1.0 / p).ToArray();
+                    var r = 2 / freqs.Sum();
+                    return (long)r;
+                case Type.Conjunction:
+                    return LCM(m.SourceLinks.Select(CalcPeriod).ToArray());
+                case Type.Broadcaster:
+                    return 1;
+                default:
+                    throw new Exception("oops");
+            }
+        }
+
         protected override object Solve2(string filename)
         {
+            if (filename.Contains("example"))
+                return 0L;
+
             var modules = File.ReadAllLines(filename).Select(Module.Parse).ToDictionary(m => m.Name);
 
-            var output = new Module(Type.Output, "output", new());
-            modules["output"] = output;
             var rx = new Module(Type.Output, "rx", new());
-            modules["rx"] = output;
+            modules["rx"] = rx;
+            rx.State = true;
 
-            var bc = modules["broadcaster"];
+            var broadcaster = modules["broadcaster"];
 
             foreach (var (n, m) in modules)
             {
@@ -153,35 +216,56 @@ namespace AoC2023
                     modules[t].RegisterInput(m.Name);
                 }
             }
+            foreach (var (n, m) in modules)
+            {
+                m.ResolveTargetLinks(modules);
+            }
+
+            var sj = modules["sj"];
+            var qq = modules["qq"];
+            var bg = modules["bg"];
+            var ls = modules["ls"];
+            var test = new List<Module> { sj, qq, bg, ls };
+            var firstLow = new Dictionary<Module, long>();
 
             long count = 0;
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             while( true )
             {
+                //Console.WriteLine();
+                //Console.WriteLine($"Push {count}");
                 count += 1;
 
-                Queue<(string from, bool val, string to)> active = new();
-                active.Enqueue(("button", false, "broadcaster"));
+                Queue<(string from, bool val, Module to)> active = new();
+                active.Enqueue(("button", false, broadcaster));
 
                 while (active.Any())
                 {
                     var (from, val, to) = active.Dequeue();
 
-                    foreach (var t in modules[to].Pulse(val, from))
+                    foreach (var t in to.Pulse(val, from))
                     {
                         active.Enqueue(t);
                     }
                 }
 
-                if( rx.State )
+                foreach( var t in test )
                 {
-                    break;
+                    if( t.LowCount > 0 )
+                    {
+                        if( !firstLow.ContainsKey(t) )
+                        {
+                            firstLow.Add(t, count);
+                            t.LowCount = 0;
+                        }
+                    }
                 }
 
-                if( count % 1000000 == 0)
-                    Console.WriteLine(count);
+                if( firstLow.Count == 4 )
+                {
+                    return LCM(firstLow.Values.ToArray());
+                }
             }
-
-            return count;
         }
     }
 }
