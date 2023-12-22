@@ -137,7 +137,7 @@ namespace AoC2023
                     {
                         deltaDeltaUnchanged += 1;
 
-                        if(deltaDeltaUnchanged > 1 )
+                        if(deltaDeltaUnchanged > 0 )
                         {
                             lst.Add((i + 1, open.Count));
                         }
