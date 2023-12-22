@@ -269,6 +269,7 @@ namespace AoC2023.Util
         }
 
         public T this[Coord p] => Get(p);
+        public T this[int x, int y] => data[y][x];
 
         public T Get(Coord p)
         {
