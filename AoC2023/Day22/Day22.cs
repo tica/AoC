@@ -19,10 +19,10 @@ namespace AoC2023
     {
         public Day22(): base(22) { }
 
-        public override object SolutionExample1 => throw new NotImplementedException();
-        public override object SolutionPuzzle1 => throw new NotImplementedException();
-        public override object SolutionExample2 => throw new NotImplementedException();
-        public override object SolutionPuzzle2 => throw new NotImplementedException();
+        public override object SolutionExample1 => 5;
+        public override object SolutionPuzzle1 => 507;
+        public override object SolutionExample2 => 7;
+        public override object SolutionPuzzle2 => 51733;
 
         record class Brick(int X0, int Y0, int Z0, int X1, int Y1, int Z1, string Name)
         {
@@ -157,7 +157,7 @@ namespace AoC2023
                 }
             }
 
-            long sum = 0;
+            int sum = 0;
 
             foreach( var brick in bricks )
             {
