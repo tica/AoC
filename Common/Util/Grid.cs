@@ -7,14 +7,14 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AoC2024.Util
+namespace AoC.Util
 {
-    internal enum Direction
+    public enum Direction
     {
         Right, Left, Up, Down,
     }
 
-    internal static class GridHelper
+    public static class GridHelper
     {
         public static Grid<char> Load(string path)
         {
@@ -47,7 +47,7 @@ namespace AoC2024.Util
         }
     }
 
-    internal class Grid<T> : IEquatable<Grid<T>> where T: IEquatable<T>
+    public class Grid<T> : IEquatable<Grid<T>> where T: IEquatable<T>
     {
         private List<List<T>> data;
 

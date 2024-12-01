@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AoC2024
+namespace AoC
 {
     public abstract class DayBase
     {

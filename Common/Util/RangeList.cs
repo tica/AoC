@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AoC2024.Util
+namespace AoC.Util
 {
-    internal class RangeList
+    public class RangeList
     {
         public List<Range> Ranges { get; private set; } = new List<Range>();
 

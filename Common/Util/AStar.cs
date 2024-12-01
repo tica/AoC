@@ -5,9 +5,9 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AoC2024.Util
+namespace AoC.Util
 {
-    internal static class AStar
+    public static class AStar
     {
         private static List<TNode> ReconstructPath<TNode>(Dictionary<TNode, TNode> cameFrom, TNode current)
             where TNode: notnull

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AoC2024
 {
-    public class Day1 : DayBase
+    public class Day1 : AoC.DayBase
     {
         public Day1() : base(1)
         {
@@ -36,16 +36,7 @@ namespace AoC2024
             left.Sort();
             right.Sort();
 
-            int sum = 0;
-
-            for ( int i = 0; i < left.Count; ++i )
-            {
-                var d = Math.Abs(left[i] - right[i]);
-
-                sum += d;
-            }
-
-            return sum;
+            return left.Zip(right, (l, r) => Math.Abs(l - r)).Sum();
         }
 
         protected override object Solve2(string filename)

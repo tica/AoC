@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AoC2024.Util
+namespace AoC.Util
 {
-    internal record class Range(long Begin, long Length)
+    public record class Range(long Begin, long Length)
     {
         public long End => Begin + Length;
 

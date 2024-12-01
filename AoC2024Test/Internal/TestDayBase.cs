@@ -9,8 +9,8 @@ namespace AoC2024Test.Internal
 {
     public abstract class TestDayBase
     {
-        private DayBase Day;
-        protected TestDayBase(DayBase day)
+        private AoC.DayBase Day;
+        protected TestDayBase(AoC.DayBase day)
         {
             Day = day;
         }

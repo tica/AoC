@@ -3,7 +3,7 @@ using AoC2024;
 using System.Text.RegularExpressions;
 
 
-static DayBase CreateLatest()
+static AoC.DayBase CreateLatest()
 {
     var assembly = typeof(Program).Assembly;
 
@@ -26,7 +26,7 @@ static DayBase CreateLatest()
     }
 
     if (latest != null)
-        return (DayBase)Activator.CreateInstance(latest)!;
+        return (AoC.DayBase)Activator.CreateInstance(latest)!;
 
     throw new Exception("Not found");
 }

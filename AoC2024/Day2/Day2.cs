@@ -10,7 +10,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace AoC2024
 {
-    public class Day2 : DayBase
+    public class Day2 : AoC.DayBase
     {
         public Day2() : base(2)
         {
