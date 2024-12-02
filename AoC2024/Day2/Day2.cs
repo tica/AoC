@@ -16,12 +16,10 @@ namespace AoC2024
         {
         }
 
-        private static IEnumerable<List<int>> ParseInput(string filename)
+        private static IEnumerable<IEnumerable<int>> ParseInput(string filename)
         {
             return System.IO.File.ReadAllLines(filename)
-                .Select(s => s.Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(int.Parse))
-                .Select(l => l.ToList()
-            );
+                .Select(s => s.Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(int.Parse));
         }
 
         private static IEnumerable<(T, T)> EnumPairs<T>(IEnumerable<T> source)
