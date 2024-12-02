@@ -9,10 +9,6 @@ namespace AoC2024
 {
     public class Day1 : AoC.DayBase
     {
-        public Day1() : base(1)
-        {
-        }
-
         private (List<int>, List<int>) ParseInput(string filename)
         {
             var left = new List<int>();

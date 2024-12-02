@@ -12,10 +12,6 @@ namespace AoC2024
 {
     public class Day3 : AoC.DayBase
     {
-        public Day3() : base(3)
-        {
-        }
-
         protected override object Solve1(string filename)
         {
             return null!;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace AoC
@@ -10,9 +11,17 @@ namespace AoC
     {
         private int Day { get; init; }
 
-        protected DayBase(int day)
+        protected DayBase(int day = 0)
         {
-            Day = day;
+            if (day != 0)
+            {
+                Day = day;
+            }
+            else
+            {
+                var m = Regex.Match(GetType().Name, @"Day(\d+)");
+                Day = int.Parse(m.Groups[1].Value);
+            }
         }
 
         protected abstract object Solve1(string filename);

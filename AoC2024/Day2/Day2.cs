@@ -12,10 +12,6 @@ namespace AoC2024
 {
     public class Day2 : AoC.DayBase
     {
-        public Day2() : base(2)
-        {
-        }
-
         private static IEnumerable<IEnumerable<int>> ParseInput(string filename)
         {
             return System.IO.File.ReadAllLines(filename)
