@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace AoC2024Test
 {
     [TestClass]
-    public class Day2 : TestDayBase
+    public class Day5 : TestDayBase
     {
     }
 }

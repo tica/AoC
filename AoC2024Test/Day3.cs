@@ -10,8 +10,5 @@ namespace AoC2024Test
     [TestClass]
     public class Day3 : TestDayBase
     {
-        public Day3() : base(new AoC2024.Day3())
-        {
-        }
     }
 }
