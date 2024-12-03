@@ -48,8 +48,8 @@ namespace AoC2023
 
             var S = grid.AllCoordinates.Single(c => c.Value == 'S');
 
-            var open = new HashSet<(int X, int Y)>() { (S.X + (W << 10), S.Y + (H << 10)) };
-            var next = new HashSet<(int X, int Y)>();
+            var open = new HashSet<int>() { ((S.X + (W << 8)) << 16) | (S.Y + (H << 8)) };
+            var next = new HashSet<int>();
 
             long prev = 0;
             long prevDelta = 0;
@@ -57,18 +57,15 @@ namespace AoC2023
 
             for (int i = 1; ; i++)
             {
-                foreach (var (x, y) in open)
+                foreach (var xy in open)
                 {
-                    foreach (var (dx, dy) in new[] { (-1, 0), (1, 0), (0, -1), (0, 1) })
-                    {
-                        var xx = x + dx;
-                        var yy = y + dy;
+                    int x = (xy >> 16) & 0xFFFF;
+                    int y = xy & 0xFFFF;
 
-                        if (grid[xx % W, yy % H] == '#')
-                            continue;
-
-                        next.Add((xx, yy));
-                    }
+                    if (grid[(x - 1) % W, y % H] != '#') next.Add(((x - 1) << 16) | y);
+                    if (grid[(x + 1) % W, y % H] != '#') next.Add(((x + 1) << 16) | y);
+                    if (grid[x % W, (y - 1) % H] != '#') next.Add(x << 16 | (y - 1));
+                    if (grid[x % W, (y + 1) % H] != '#') next.Add(x << 16 | (y + 1));
                 }
 
                 open = next;
