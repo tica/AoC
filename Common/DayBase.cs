@@ -27,9 +27,9 @@ namespace AoC
         protected abstract object Solve1(string filename);
         protected abstract object Solve2(string filename);
 
-        private string ExampleFile1 => $"Day{Day}/example1.txt";
-        private string ExampleFile2 => $"Day{Day}/example2.txt";
-        private string InputFile => $"Day{Day}/input.txt";
+        private string ExampleFile1 => $"Day{Day:00}/example1.txt";
+        private string ExampleFile2 => $"Day{Day:00}/example2.txt";
+        private string InputFile => $"Day{Day:00}/input.txt";
 
         public object SolveExample1()
         {
