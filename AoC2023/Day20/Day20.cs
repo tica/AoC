@@ -1,12 +1,6 @@
-﻿using System;
-using System.Diagnostics;
-using System.Net.WebSockets;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
-using Range = AoC.Util.Range;
+using AoC.Util;
 
 namespace AoC2023
 {
@@ -159,20 +153,6 @@ namespace AoC2023
             return numLow * numHigh;
         }
 
-        static long LCM(long[] numbers)
-        {
-            return numbers.Aggregate(lcm);
-        }
-        static long lcm(long a, long b)
-        {
-            return Math.Abs(a * b) / GCD(a, b);
-        }
-        static long GCD(long a, long b)
-        {
-            return b == 0 ? a : GCD(b, a % b);
-        }
-
-
         private long CalcPeriod(Module m)
         {
             switch(m.Type)
@@ -185,7 +165,7 @@ namespace AoC2023
                     var r = 2 / freqs.Sum();
                     return (long)r;
                 case Type.Conjunction:
-                    return LCM(m.SourceLinks.Select(CalcPeriod).ToArray());
+                    return MathFunc.LCM(m.SourceLinks.Select(CalcPeriod).ToArray());
                 case Type.Broadcaster:
                     return 1;
                 default:
@@ -260,7 +240,7 @@ namespace AoC2023
 
                 if( firstLow.Count == 4 )
                 {
-                    return LCM(firstLow.Values.ToArray());
+                    return MathFunc.LCM(firstLow.Values.ToArray());
                 }
             }
         }
