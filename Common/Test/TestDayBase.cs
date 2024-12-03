@@ -1,32 +1,19 @@
-﻿using AoC2024;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace AoC2024Test.Internal
+namespace Common.Test
 {
     public abstract class TestDayBase
     {
         private AoC.DayBase? Day;
 
-        private static System.Reflection.Assembly AoCAssembly = typeof(AoC2024.Day1).Assembly;
-
-        protected TestDayBase(AoC.DayBase? day = null)
+        protected TestDayBase(Type day1Type)
         {
-            if (day != null)
-            {
-                Day = day;
-            }
-            else
-            {
-                var m = Regex.Match(GetType().Name, @"Day(\d+)");
-                var number = int.Parse(m.Groups[1].Value);
+            var m = Regex.Match(GetType().Name, @"Day(\d+)");
+            var number = int.Parse(m.Groups[1].Value);
 
-                Day = (AoC.DayBase?)AoCAssembly.CreateInstance($"AoC2024.Day{number}");
-            }
+            var typeName = $"{day1Type.Namespace}.Day{number}";
+            Day = (AoC.DayBase?)day1Type.Assembly.CreateInstance(typeName);
         }
 
         [TestInitialize]

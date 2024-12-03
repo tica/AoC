@@ -1,7 +1,12 @@
-﻿using AoC2024Test.Internal;
-
-namespace Tests
+﻿namespace Tests
 {
+    public class TestDayBase : Common.Test.TestDayBase
+    {
+        public TestDayBase() : base(typeof(AoC2024.Day1))
+        {
+        }
+    }
+
     [TestClass] public class Day01 : TestDayBase { }
     [TestClass] public class Day02 : TestDayBase { }
     [TestClass] public class Day03 : TestDayBase { }
