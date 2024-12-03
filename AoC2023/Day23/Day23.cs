@@ -1,6 +1,7 @@
 ﻿using AoC.Util;
 using Grid = AoC.Util.Grid<char>;
 using Coord = AoC.Util.Grid<char>.Coord;
+using System.Numerics;
 
 namespace AoC2023
 {
@@ -17,27 +18,28 @@ namespace AoC2023
             if (from == to)
                 return 0;
 
-            var newSeen = new HashSet<Coord>(seen);
-            newSeen.Add(from);
+            seen.Add(from);
 
             int longest = 0;
 
             if( !seen.Contains(from.Left) && (from.Left.Value == '.' || from.Left.Value == '<') )
             {
-                longest = Math.Max(longest, FindLongestPath(grid, from.Left, to, newSeen));
+                longest = Math.Max(longest, FindLongestPath(grid, from.Left, to, seen));
             }
             if (!seen.Contains(from.Right) && (from.Right.Value == '.' || from.Right.Value == '>'))
             {
-                longest = Math.Max(longest, FindLongestPath(grid, from.Right, to, newSeen));
+                longest = Math.Max(longest, FindLongestPath(grid, from.Right, to, seen));
             }
             if (!seen.Contains(from.Bottom) && (from.Bottom.Value == '.' || from.Bottom.Value == 'v'))
             {
-                longest = Math.Max(longest, FindLongestPath(grid, from.Bottom, to, newSeen));
+                longest = Math.Max(longest, FindLongestPath(grid, from.Bottom, to, seen));
             }
             if (!seen.Contains(from.Top) && from.Top.IsValid && (from.Top.Value == '.' || from.Top.Value == '^'))
             {
-                longest = Math.Max(longest, FindLongestPath(grid, from.Top, to, newSeen));
+                longest = Math.Max(longest, FindLongestPath(grid, from.Top, to, seen));
             }
+
+            seen.Remove(from);
 
             return 1 + longest;
         }
@@ -52,17 +54,20 @@ namespace AoC2023
             return FindLongestPath(grid, S, G, new HashSet<Coord>());
         }
 
-        private int FindLongestPath2(Dictionary<Coord, List<(Coord vertex, int dist)>> graph, Coord from, Coord to, HashSet<Coord> seen, int len)
+        private int FindLongestPath2<TNode>(Dictionary<TNode, List<(TNode vertex, int dist)>> graph, TNode from, TNode to, HashSet<TNode> seen, int len) where TNode: notnull
         {
-            if (seen.Contains(from))
-                return -1;
-
-            if (from == to)
+            if (from.Equals(to))
                 return len;
 
             seen.Add(from);
 
-            var longest = graph[from].Max(n => FindLongestPath2(graph, n.vertex, to, seen, len + n.dist));
+            var longest = graph[from].Max(
+                n => {
+                    if( seen.Contains(n.vertex) )
+                        return -1;
+                    return FindLongestPath2(graph, n.vertex, to, seen, len + n.dist);                    
+                }
+            );
 
             seen.Remove(from);
 
@@ -104,7 +109,11 @@ namespace AoC2023
                 graph.Remove(center);
             }
 
-            return FindLongestPath2(graph, S, G, new(), 0);
+            // Rebuild graph structure, replacing Coord objects with just numbers
+            var mapToNumbers = graph.Select((node, index) => (node, index)).ToDictionary(p => p.node.Key, p => p.index);
+            var numbersGraph = graph.ToDictionary(kvp => mapToNumbers[kvp.Key], kvp => kvp.Value.Select(lst => (mapToNumbers[lst.vertex], lst.dist)).ToList());
+
+            return FindLongestPath2(numbersGraph, mapToNumbers[S], mapToNumbers[G], new(), 0);
         }
     }
 }
