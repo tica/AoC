@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AoC.Util;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -19,16 +20,7 @@ namespace AoC2023
 
         private static IEnumerable<int> CalcDifferences(IEnumerable<int> numbers)
         {
-            int? prev = null;
-            foreach (int number in numbers)
-            {
-                if (prev != null)
-                {
-                    yield return number - prev.Value;
-                }
-
-                prev = number;
-            }
+            return numbers.Pairwise().Select(p => p.Item2 - p.Item1);
         }
 
         private static int Extrapolate(List<int> numbers)

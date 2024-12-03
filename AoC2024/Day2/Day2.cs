@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Schema;
-using static System.Net.Mime.MediaTypeNames;
+﻿using AoC.Util;
 
 namespace AoC2024
 {
@@ -18,23 +10,11 @@ namespace AoC2024
                 .Select(s => s.Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(int.Parse));
         }
 
-        private static IEnumerable<(T, T)> EnumPairs<T>(IEnumerable<T> source)
-        {
-            var prev = source.First();
-
-            foreach (var next in source.Skip(1))
-            {
-                yield return (prev, next);
-
-                prev = next;
-            }
-        }
-
         private static bool CheckLine(IEnumerable<int> line)
         {
             Func<int, bool> checkDiff = line.First() > line.Last() ? (d => d >= -3 && d <= -1) : (d => d >= 1 && d <= 3);
 
-            return EnumPairs(line).Select(t => t.Item2 - t.Item1).All(checkDiff);
+            return line.Pairwise().Select(t => t.Item2 - t.Item1).All(checkDiff);
         }
 
         protected override object Solve1(string filename)
