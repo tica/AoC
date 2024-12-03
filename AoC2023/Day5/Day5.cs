@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
+using Range = AoC.Util.Range;
 
 namespace AoC2023
 {
@@ -15,44 +10,10 @@ namespace AoC2023
         public override object SolutionExample2 => 46L;
         public override object SolutionPuzzle2 => 52510809L;
 
-        record class Range(long Begin, long Length)
-        {
-            public long End => Begin + Length;
-
-            public bool Contains(long val) => val >= Begin && val < End;
-
-            public Range Intersect(Range other)
-            {
-                var begin = Math.Max(Begin, other.Begin);
-                var end = Math.Min(End, other.End);
-                if (begin >= end)
-                    throw new Exception("No intersection");
-
-                return new Range(begin, end - begin);
-            }
-
-            public bool Intersects(Range other)
-            {
-                var begin = Math.Max(Begin, other.Begin);
-                var end = Math.Min(End, other.End);
-                return (begin < end);
-            }
-
-            public Range Merge(Range other)
-            {
-                var begin = Math.Min(Begin, other.Begin);
-                var end = Math.Max(End, other.End);
-
-                return new Range(begin, end - begin);
-            }
-        }
 
         record class RangeMapping(long Destination, Range SourceRange)
         {
-            public bool Contains(long val)
-            {
-                return SourceRange.Contains(val);
-            }
+            public bool Contains(long val) => SourceRange.Contains(val);
 
             public long MapValue(long val)
             {

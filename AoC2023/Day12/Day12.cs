@@ -1,17 +1,5 @@
-﻿using AoC.Util;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Numerics;
-using System.Runtime;
-using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
-using System.Text;
-using System.Text.Json.Serialization;
+﻿using System.Data;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 
 namespace AoC2023
 {

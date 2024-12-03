@@ -19,11 +19,6 @@ namespace AoC2023
         public override object SolutionExample2 => 10;
         public override object SolutionPuzzle2 => 351;
 
-        private enum Direction
-        {
-            Left, Right, Up, Down
-        }
-
         private static (Grid<char>.Coord, Direction) Next(Grid<char>.Coord coord, Direction dir)
         {
             var v = coord.Parent[coord];
