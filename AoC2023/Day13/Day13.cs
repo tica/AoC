@@ -1,22 +1,9 @@
-﻿using AoC2023.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime;
-using System.Runtime.ExceptionServices;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
+﻿using AoC.Util;
 
 namespace AoC2023
 {
-    public class Day13 : DayBase
+    public class Day13 : AoC.DayBase
     {
-        public Day13(): base(13) { }
-
         public override object SolutionExample1 => 405L;
         public override object SolutionPuzzle1 => 35232L;
         public override object SolutionExample2 => 400L;
@@ -44,7 +31,7 @@ namespace AoC2023
             return null;
         }
 
-        private long FindReflections(Util.Grid<char> grid)
+        private long FindReflections(Grid<char> grid)
         {
             int w = grid.Width;
             int h = grid.Height;
@@ -61,7 +48,7 @@ namespace AoC2023
         protected override object Solve1(string filename)
         {
             long sum = 0;
-            foreach (var grid in Util.GridHelper.LoadMultiple(filename))
+            foreach (var grid in GridHelper.LoadMultiple(filename))
             {
                 var rc = FindReflections(grid);
                 sum += rc;
@@ -90,7 +77,7 @@ namespace AoC2023
             return null;
         }
 
-        private long FindDefectiveReflections(Util.Grid<char> grid)
+        private long FindDefectiveReflections(Grid<char> grid)
         {
             int w = grid.Width;
             int h = grid.Height;
@@ -107,7 +94,7 @@ namespace AoC2023
         protected override object Solve2(string filename)
         {
             long sum = 0;
-            foreach (var grid in Util.GridHelper.LoadMultiple(filename))
+            foreach (var grid in GridHelper.LoadMultiple(filename))
             {
                 var rc = FindDefectiveReflections(grid);
                 sum += rc;

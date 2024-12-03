@@ -10,10 +10,8 @@ using System.Threading.Tasks.Dataflow;
 
 namespace AoC2023
 {
-    public class Day9 : DayBase
+    public class Day9 : AoC.DayBase
     {
-        public Day9(): base(9) { }
-
         public override object SolutionExample1 => 114L;
         public override object SolutionPuzzle1 => 2098530125L;
         public override object SolutionExample2 => 2L;

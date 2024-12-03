@@ -1,24 +1,11 @@
-﻿using AoC2023.Util;
-using System;
-using System.Diagnostics;
-using System.Net.WebSockets;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using Grid = AoC2023.Util.Grid<char>;
-using Coord = AoC2023.Util.Grid<char>.Coord;
-using Range = AoC2023.Util.Range;
-using System.IO;
-using System.Text;
-using System.Xml.Schema;
+﻿using AoC.Util;
+using Grid = AoC.Util.Grid<char>;
+using Coord = AoC.Util.Grid<char>.Coord;
 
 namespace AoC2023
 {
-    public class Day21 : DayBase
+    public class Day21 : AoC.DayBase
     {
-        public Day21(): base(21) { }
-
         public override object SolutionExample1 => 16L;
         public override object SolutionPuzzle1 => 3666L;
         public override object SolutionExample2 => 16733044L;

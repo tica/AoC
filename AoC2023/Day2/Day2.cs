@@ -7,12 +7,8 @@ using System.Threading.Tasks;
 
 namespace AoC2023
 {
-    public class Day2 : DayBase
+    public class Day2 : AoC.DayBase
     {
-        public Day2() : base(2)
-        {
-        }
-
         record Game(int Number, List<Dictionary<string, int>> Rounds)
         {
             static Dictionary<string, int> ParseRound(string input)

@@ -1,4 +1,4 @@
-﻿using AoC2023.Util;
+﻿using AoC.Util;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,10 +15,8 @@ using System.Threading.Tasks.Dataflow;
 
 namespace AoC2023
 {
-    public class Day12 : DayBase
+    public class Day12 : AoC.DayBase
     {
-        public Day12(): base(12) { }
-
         public override object SolutionExample1 => 21L;
         public override object SolutionPuzzle1 => 7599L;
         public override object SolutionExample2 => 525152L;

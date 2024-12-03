@@ -1,28 +1,15 @@
-﻿using AoC2023.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime;
-using System.Runtime.ExceptionServices;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
+﻿using AoC.Util;
 
 namespace AoC2023
 {
-    public class Day14 : DayBase
+    public class Day14 : AoC.DayBase
     {
-        public Day14(): base(14) { }
-
         public override object SolutionExample1 => 136L;
         public override object SolutionPuzzle1 => 105982L;
         public override object SolutionExample2 => 64L;
         public override object SolutionPuzzle2 => 85175L;
 
-        private void MoveNorth(Util.Grid<char> grid)
+        private void MoveNorth(Grid<char> grid)
         {
             foreach( var row in grid.Rows )
             {
@@ -42,7 +29,7 @@ namespace AoC2023
             }
         }
 
-        private void MoveSouth(Util.Grid<char> grid)
+        private void MoveSouth(Grid<char> grid)
         {
             foreach (var row in grid.Rows.Reverse())
             {
@@ -62,7 +49,7 @@ namespace AoC2023
             }
         }
 
-        private void MoveWest(Util.Grid<char> grid)
+        private void MoveWest(Grid<char> grid)
         {
             foreach (var col in grid.Columns)
             {
@@ -82,7 +69,7 @@ namespace AoC2023
             }
         }
 
-        private void MoveEast(Util.Grid<char> grid)
+        private void MoveEast(Grid<char> grid)
         {
             foreach (var col in grid.Columns.Reverse())
             {
@@ -102,7 +89,7 @@ namespace AoC2023
             }
         }
 
-        private long Eval(Util.Grid<char> grid)
+        private long Eval(Grid<char> grid)
         {
             long sum = 0;
 
@@ -117,16 +104,16 @@ namespace AoC2023
 
         protected override object Solve1(string filename)
         {
-            var grid = Util.GridHelper.Load(filename);
+            var grid = GridHelper.Load(filename);
 
             MoveNorth(grid);
 
             return Eval(grid);
         }
 
-        int FindCycle(Util.Grid<char> grid)
+        int FindCycle(Grid<char> grid)
         {
-            var clones = new List<Util.Grid<char>>();
+            var clones = new List<Grid<char>>();
                         
             for (int j = 0; j < 1_000_000_000; ++j)
             {
@@ -151,7 +138,7 @@ namespace AoC2023
 
         protected override object Solve2(string filename)
         {
-            var grid = Util.GridHelper.Load(filename);
+            var grid = GridHelper.Load(filename);
             
             var cycle = FindCycle(grid.Clone());
             int limit = 1_000_000_000 - ((1_000_000_000 / cycle) * cycle);

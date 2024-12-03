@@ -8,10 +8,8 @@ using System.Threading.Tasks;
 
 namespace AoC2023
 {
-    public class Day6 : DayBase
+    public class Day6 : AoC.DayBase
     {
-        public Day6(): base(6) { }
-
         public override object SolutionExample1 => 288;
         public override object SolutionPuzzle1 => 800280;
         public override object SolutionExample2 => 71503L;

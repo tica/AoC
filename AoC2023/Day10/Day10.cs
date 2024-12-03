@@ -1,4 +1,4 @@
-﻿using AoC2023.Util;
+﻿using AoC.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +12,8 @@ using System.Threading.Tasks.Dataflow;
 
 namespace AoC2023
 {
-    public class Day10 : DayBase
+    public class Day10 : AoC.DayBase
     {
-        public Day10(): base(10) { }
-
         public override object SolutionExample1 => 8;
         public override object SolutionPuzzle1 => 6768;
         public override object SolutionExample2 => 10;
@@ -90,7 +88,7 @@ namespace AoC2023
 
         protected override object Solve1(string filename)
         {
-            var grid = Util.GridHelper.Load(filename);
+            var grid = GridHelper.Load(filename);
             var start = grid.AllCoordinates.Single(c => grid[c] == 'S');
 
             Direction dir = Direction.Right;
@@ -108,7 +106,7 @@ namespace AoC2023
             return loop.Count / 2;
         }
 
-        private void PrintGrid(Util.Grid<char> grid)
+        private void PrintGrid(Grid<char> grid)
         {
             for(int y = 0; y < grid.Height; ++y)
             {
@@ -212,14 +210,14 @@ namespace AoC2023
 
         protected override object Solve2(string filename)
         {
-            var grid = Util.GridHelper.Load(filename);
+            var grid = GridHelper.Load(filename);
             var start = grid.AllCoordinates.Single(c => grid[c] == 'S');
 
             grid.Set(start, '7');
 
             var loop = FindLoop(start, Direction.Right);
 
-            var grid2 = Util.GridHelper.Load(filename);
+            var grid2 = GridHelper.Load(filename);
             foreach( var p in grid2.AllCoordinates)
             {
                 grid2.Set(p, '.');

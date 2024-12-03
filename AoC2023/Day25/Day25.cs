@@ -1,32 +1,11 @@
-﻿using AoC2023.Util;
-using System;
-using System.Diagnostics;
-using System.Net.WebSockets;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using Grid = AoC2023.Util.Grid<char>;
-using Coord = AoC2023.Util.Grid<char>.Coord;
-using Range = AoC2023.Util.Range;
-using System.IO;
-using System.Text;
-using System.ComponentModel.Design;
-using System.Runtime.Intrinsics.Arm;
-using System.Xml.Serialization;
-using System.Runtime.Intrinsics.X86;
-using System.Diagnostics.Metrics;
-
-namespace AoC2023
+﻿namespace AoC2023
 {
-    public class Day25 : DayBase
+    public class Day25 : AoC.DayBase
     {
-        public Day25(): base(25) { }
-
         public override object SolutionExample1 => 54;
         public override object SolutionPuzzle1 => 514794;
-        public override object SolutionExample2 => throw new NotImplementedException();
-        public override object SolutionPuzzle2 => throw new NotImplementedException();
+        public override object SolutionExample2 => null!;
+        public override object SolutionPuzzle2 => null!;
 
         protected override object Solve1(string filename)
         {
@@ -106,7 +85,7 @@ namespace AoC2023
 
         protected override object Solve2(string filename)
         {
-            throw new NotImplementedException();
+            return null!;
         }
     }
 }

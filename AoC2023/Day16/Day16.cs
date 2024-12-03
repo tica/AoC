@@ -1,27 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Numerics;
-using System.Runtime;
-using System.Runtime.ExceptionServices;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
-
-using Direction = AoC2023.Util.Direction;
-using Grid = AoC2023.Util.Grid<char>;
-using Coord = AoC2023.Util.Grid<char>.Coord;
-using System.Net;
+﻿using AoC.Util;
+using Direction = AoC.Util.Direction;
+using Grid = AoC.Util.Grid<char>;
+using Coord = AoC.Util.Grid<char>.Coord;
 
 namespace AoC2023
 {
-    public class Day16 : DayBase
+    public class Day16 : AoC.DayBase
     {
-        public Day16(): base(16) { }
-
         public override object SolutionExample1 => 46;
         public override object SolutionPuzzle1 => 7307;
         public override object SolutionExample2 => 51;
@@ -153,14 +138,14 @@ namespace AoC2023
 
         protected override object Solve1(string filename)
         {
-            var grid = Util.GridHelper.Load(filename);
+            var grid = GridHelper.Load(filename);
 
             return CountEnergized(grid, grid.Pos(0, 0), Direction.Right);
         }
 
         protected override object Solve2(string filename)
         {
-            var grid = Util.GridHelper.Load(filename);
+            var grid = GridHelper.Load(filename);
 
             return new int[] {
                 grid.FirstRow.Max(p => CountEnergized(grid, p, Direction.Down)),

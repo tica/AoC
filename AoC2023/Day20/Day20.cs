@@ -1,5 +1,4 @@
-﻿using AoC2023.Util;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Reflection;
@@ -7,14 +6,12 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-using Range = AoC2023.Util.Range;
+using Range = AoC.Util.Range;
 
 namespace AoC2023
 {
-    public class Day20 : DayBase
+    public class Day20 : AoC.DayBase
     {
-        public Day20(): base(20) { }
-
         public override object SolutionExample1 => 11687500L;
         public override object SolutionPuzzle1 => 944750144L;
         public override object SolutionExample2 => 0L;

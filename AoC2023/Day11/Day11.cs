@@ -1,4 +1,4 @@
-﻿using AoC2023.Util;
+﻿using AoC.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +13,8 @@ using System.Threading.Tasks.Dataflow;
 
 namespace AoC2023
 {
-    public class Day11 : DayBase
+    public class Day11 : AoC.DayBase
     {
-        public Day11(): base(11) { }
-
         public override object SolutionExample1 => 374L;
         public override object SolutionPuzzle1 => 9565386L;
         public override object SolutionExample2 => 1030L;
@@ -24,7 +22,7 @@ namespace AoC2023
 
         protected override object Solve1(string filename)
         {
-            var grid = Util.GridHelper.Load(filename);
+            var grid = GridHelper.Load(filename);
 
             for ( int y = 0; y < grid.Height; ++y)
             {
@@ -70,7 +68,7 @@ namespace AoC2023
 
         protected override object Solve2(string filename)
         {
-            var grid = Util.GridHelper.Load(filename);
+            var grid = GridHelper.Load(filename);
 
             List<int> emptyRows = new();
             List<int> emptyColumns = new();

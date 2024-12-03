@@ -1,4 +1,4 @@
-﻿using AoC2023.Util;
+﻿using AoC.Util;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -6,15 +6,13 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-using Grid = AoC2023.Util.Grid<char>;
-using Range = AoC2023.Util.Range;
+using Grid = AoC.Util.Grid<char>;
+using Range = AoC.Util.Range;
 
 namespace AoC2023
 {
-    public class Day18 : DayBase
+    public class Day18 : AoC.DayBase
     {
-        public Day18(): base(18) { }
-
         public override object SolutionExample1 => 62L;
         public override object SolutionPuzzle1 => 42317L;
         public override object SolutionExample2 => 952408144115L;

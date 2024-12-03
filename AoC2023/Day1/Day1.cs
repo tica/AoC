@@ -7,12 +7,8 @@ using System.Threading.Tasks;
 
 namespace AoC2023
 {
-    public class Day1 : DayBase
+    public class Day1 : AoC.DayBase
     {
-        public Day1() : base(1)
-        {
-        }
-
         protected override object Solve1(string filename)
         {
             int sum = 0;

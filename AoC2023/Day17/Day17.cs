@@ -1,14 +1,10 @@
-﻿using AoC2023.Util;
-using System;
-using Grid = AoC2023.Util.Grid<int>;
-using Coord = AoC2023.Util.Grid<int>.Coord;
+﻿using AoC.Util;
+using Coord = AoC.Util.Grid<int>.Coord;
 
 namespace AoC2023
 {
-    public class Day17 : DayBase
+    public class Day17 : AoC.DayBase
     {
-        public Day17(): base(17) { }
-
         public override object SolutionExample1 => 102;
         public override object SolutionPuzzle1 => 1238;
         public override object SolutionExample2 => 94;
@@ -104,9 +100,9 @@ namespace AoC2023
 
         private int FindPath(string filename)
         {
-            var grid = Util.GridHelper.Load(filename).Transform(x => int.Parse(x.ToString()));
+            var grid = GridHelper.Load(filename).Transform(x => int.Parse(x.ToString()));
 
-            var nodePath = Util.AStar.FindPath(
+            var nodePath = AStar.FindPath(
                 Node.Any(grid.TopLeft),
                 Node.Any(grid.BottomRight),
                 n => n.WeightedNeighbors,

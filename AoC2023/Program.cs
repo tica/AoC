@@ -4,7 +4,7 @@ namespace AoC2023
 {
     internal class Program
     {
-        static DayBase CreateLatest()
+        static AoC.DayBase CreateLatest()
         {
             var assembly = typeof(Program).Assembly;
 
@@ -27,7 +27,7 @@ namespace AoC2023
             }
 
             if (latest != null)
-                return (DayBase)Activator.CreateInstance(latest)!;
+                return (AoC.DayBase)Activator.CreateInstance(latest)!;
 
             throw new Exception("Not found");
         }
