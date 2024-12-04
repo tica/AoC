@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -233,6 +234,22 @@ namespace AoC.Util
                 }
             }
         }
+        public IEnumerable<IEnumerable<Coord>> Diagonals
+        {
+            get
+            {
+                for (int y = 0; y < Height; ++y)
+                {
+                    yield return DiagonalUp(0, y);
+                    yield return DiagonalDown(0, y);
+                }
+                for (int x = 1; x < Width; ++x)
+                {
+                    yield return DiagonalDown(x, 0);
+                    yield return DiagonalUp(x, Height - 1);
+                }
+            }
+        }
 
         private ulong ToBits(List<Coord> coords, Func<T, bool> predicate)
         {
@@ -265,6 +282,28 @@ namespace AoC.Util
             for (int y = 0; y < Height; ++y)
             {
                 yield return new Coord(this, x, y);
+            }
+        }
+
+        public IEnumerable<Coord> DiagonalDown(int x, int y)
+        {
+            while( x < Width && y < Height )
+            {
+                yield return new Coord(this, x, y);
+
+                x += 1;
+                y += 1;
+            }
+        }
+
+        public IEnumerable<Coord> DiagonalUp(int x, int y)
+        {
+            while (x < Width && y >= 0)
+            {
+                yield return new Coord(this, x, y);
+
+                x += 1;
+                y -= 1;
             }
         }
 
@@ -317,7 +356,7 @@ namespace AoC.Util
         {
             public override string ToString()
             {
-                return $"({X}, {Y})";
+                return $"({X}, {Y} [{Value}] )";
             }
 
             public static Coord Invalid = new Coord(null!, 0, 0);
@@ -330,6 +369,7 @@ namespace AoC.Util
             public bool IsRightBorder => X == Parent.Width - 1;
             public bool IsTopBorder => Y == 0;
             public bool IsBottomBorder => Y == Parent.Height - 1;
+            public bool IsAnyBorder => IsLeftBorder || IsRightBorder || IsTopBorder || IsBottomBorder;
 
             public static Coord operator ++(Coord p)
             {
