@@ -26,6 +26,15 @@ namespace AoC.Util
             return new Grid<char>(data);
         }
 
+        public static Grid<T> Load<T>(string path, Func<char, T> convert) where T : IEquatable<T>
+        {
+            var data = System.IO.File.ReadAllLines(path)
+                .Select(s => s.Select(convert).ToList())
+                .ToList();
+
+            return new Grid<T>(data);
+        }
+
         public static IEnumerable<Grid<char>> LoadMultiple(string filename)
         {
             var current = new List<List<char>>();
