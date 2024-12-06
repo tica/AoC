@@ -20,17 +20,15 @@ namespace AoC2024
             var p = grid.AllCoordinates.Single(p => p.Value == '^');
             var dir = Direction.Up;
 
-            var visited = new HashSet<Coord>();
+            var visited = new HashSet<Coord>(grid.Width * grid.Height);
 
             while (p.IsValid)
             {
                 visited.Add(p);
 
-                var q = p.Neighbor(dir);
-                while (q.IsValid && q.Value == '#')
+                while (p.NeighborValue(dir) == '#')
                 {
                     dir = dir.TurnRight();
-                    q = p.Neighbor(dir);
                 }
 
                 p = p.Neighbor(dir);
@@ -53,25 +51,21 @@ namespace AoC2024
             var p = grid.AllCoordinates.Single(p => p.Value == '^');
             var dir = Direction.Up;
 
-            var visited = new HashSet<(Coord, Direction)>();
+            var visited = new HashSet<(int, int, Direction)>(grid.Width * grid.Height);
 
             while (p.IsValid)
             {
-                if (visited.Contains((p, dir)))
+                if (visited.Contains((p.X, p.Y, dir)))
                 {
                     return true;
                 }
 
-                visited.Add((p, dir));
+                visited.Add((p.X, p.Y, dir));
 
-                var q = p.Neighbor(dir);
-                while (q.IsValid && q.Value == '#')
+                while( p.NeighborValue(dir) == '#')
                 {
                     dir = dir.TurnRight();
-                    q = p.Neighbor(dir); 
                 }
-
-                grid.Set(p, 'X');
 
                 p = p.Neighbor(dir);
             }
@@ -90,17 +84,14 @@ namespace AoC2024
 
             foreach (var p in candidates)
             {
-                grid = GridHelper.Load(filename);
                 grid.Set(p, '#');
 
                 if (DetectCircle(grid))
                 {
                     count += 1;
-                    //grid.Set(p, 'O');
-                    //grid.Print();
                 }
 
-                Console.Write(".");
+                grid.Set(p, '.');
             }
 
             return count;

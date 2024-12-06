@@ -28,6 +28,30 @@ namespace AoC.Util
                 _ => throw new ArgumentException(nameof(direction))
             };
         }
+
+        public static Direction TurnLeft(this Direction direction)
+        {
+            return direction switch
+            {
+                Direction.Up => Direction.Left,
+                Direction.Right => Direction.Up,
+                Direction.Down => Direction.Right,
+                Direction.Left => Direction.Down,
+                _ => throw new ArgumentException(nameof(direction))
+            };
+        }
+
+        public static Direction Reverse(this Direction direction)
+        {
+            return direction switch
+            {
+                Direction.Up => Direction.Down,
+                Direction.Right => Direction.Left,
+                Direction.Down => Direction.Up,
+                Direction.Left => Direction.Right,
+                _ => throw new ArgumentException(nameof(direction))
+            };
+        }
     }
 
     public static class GridHelper
@@ -532,6 +556,14 @@ namespace AoC.Util
                     default:
                         throw new Exception("oops");
                 }
+            }
+
+            public T? NeighborValue(Direction dir)
+            {
+                var p = Neighbor(dir);
+                if (p.IsValid)
+                    return p.Value;
+                return default;
             }
         }
     };
