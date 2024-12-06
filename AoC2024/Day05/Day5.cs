@@ -53,11 +53,11 @@ namespace AoC2024
         {
             return (a, b) =>
             {
-                foreach (var r in rules)
+                foreach (var (l, r) in rules)
                 {
-                    if (r.Item1 == a && r.Item2 == b)
+                    if (l == a && r == b)
                         return -1;
-                    if (r.Item1 == b && r.Item2 == a)
+                    if (l == b && r == a)
                         return 1;
                 }
 
