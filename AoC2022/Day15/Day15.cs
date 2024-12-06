@@ -1,47 +1,26 @@
-﻿using System.Text.RegularExpressions;
+﻿using AoC.Util;
+using Range = AoC.Util.Range;
+using System.Text.RegularExpressions;
 
 namespace AoC2022
 {
     public class Day15 : AoC.DayBase
     {
-        internal record BlockRange(int From, int To)
-        {
-            public bool Overlaps(BlockRange other)
-            {
-                if (other.From > To)
-                    return false;
-                if (From > other.To)
-                    return false;
-
-                return true;
-            }
-
-            public bool IsBehind(BlockRange other)
-            {
-                return To > other.From;
-            }
-
-            public BlockRange Merge(BlockRange other)
-            {
-                return new BlockRange(Math.Min(From, other.From), Math.Max(To, other.To));
-            }
-        }
-
-        void insertBlock(List<BlockRange> blocked, int from, int to)
+        void insertBlock(List<Range> blocked, int from, int to)
         {
             if (to < from)
                 return;
 
-            var newBlock = new BlockRange(from, to);
+            var newBlock = new Range(from, to - from + 1);
 
             for (int i = 0; i < blocked.Count; ++i)
             {
-                if (newBlock.Overlaps(blocked[i]))
+                if (newBlock.Touches(blocked[i]))
                 {
                     var merged = blocked[i].Merge(newBlock);
                     blocked.RemoveAt(i);
 
-                    while (blocked.Count > i && blocked[i].Overlaps(merged))
+                    while (blocked.Count > i && blocked[i].Touches(merged))
                     {
                         merged = merged.Merge(blocked[i]);
                         blocked.RemoveAt(i);
@@ -61,18 +40,6 @@ namespace AoC2022
             blocked.Add(newBlock);
         }
 
-        int count(List<BlockRange> blocked)
-        {
-            int sum = 0;
-
-            foreach (var b in blocked)
-            {
-                sum += (b.To - b.From + 1);
-            }
-
-            return sum;
-        }
-
         List<((int, int), (int, int))> ParseInput(string fileName)
         {
             return File.ReadAllLines(fileName).Select(
@@ -88,9 +55,9 @@ namespace AoC2022
             ).ToList();
         }
 
-        List<BlockRange> buildBlockInfo(List<((int, int), (int, int))> input, int lineNumber, bool blockBeacons)
+        List<Range> buildBlockInfo(List<((int, int), (int, int))> input, int lineNumber, bool blockBeacons)
         {
-            var blocked = new List<BlockRange>();
+            var blocked = new List<Range>();
 
             foreach (var line in input)
             {
@@ -119,13 +86,13 @@ namespace AoC2022
             return blocked;
         }
 
-        int? findFree(List<BlockRange> blocks, int from, int to)
+        long? findFree(List<Range> blocks, int from, int to)
         {
-            for (int i = 0; i < blocks.Count - 1; ++i)
+            foreach( var (l, r) in blocks.Pairwise() )
             {
-                if (blocks[i].To < blocks[i + 1].From + 1)
+                if (l.End < r.Begin)
                 {
-                    int free = blocks[i].To + 1;
+                    var free = l.End;
 
                     if (free >= from && free <= to)
                     {
@@ -143,7 +110,7 @@ namespace AoC2022
             int y = filename.Contains("example") ? 10 : 2000000;
 
             var blocked10 = buildBlockInfo(input, y, false);
-            return count(blocked10);
+            return blocked10.Sum(b => b.Length);
         }
 
         protected override object Solve2(string filename)
@@ -168,8 +135,8 @@ namespace AoC2022
             return 0;
         }
 
-        public override object SolutionExample1 => 26;
-        public override object SolutionPuzzle1 => 5838453;
+        public override object SolutionExample1 => 26L;
+        public override object SolutionPuzzle1 => 5838453L;
         public override object SolutionExample2 => 56000011L;
         public override object SolutionPuzzle2 => 12413999391794L;
     }

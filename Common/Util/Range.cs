@@ -29,6 +29,21 @@ namespace AoC.Util
             return (begin < end);
         }
 
+        public bool Touches(Range other)
+        {
+            if (other.Begin >= End)
+                return false;
+            if (Begin >= other.End)
+                return false;
+
+            return true;
+        }
+
+        public bool IsBehind(Range other)
+        {
+            return Begin > other.End;
+        }
+
         public Range Merge(Range other)
         {
             var begin = Math.Min(Begin, other.Begin);
