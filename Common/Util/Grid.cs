@@ -15,6 +15,21 @@ namespace AoC.Util
         Right, Left, Up, Down,
     }
 
+    public static class DirectionHelper
+    {
+        public static Direction TurnRight(this Direction direction)
+        {
+            return direction switch
+            {
+                Direction.Up => Direction.Right,
+                Direction.Right => Direction.Down,
+                Direction.Down => Direction.Left,
+                Direction.Left => Direction.Up,
+                _ => throw new ArgumentException(nameof(direction))
+            };
+        }
+    }
+
     public static class GridHelper
     {
         public static Grid<char> Load(string path)
