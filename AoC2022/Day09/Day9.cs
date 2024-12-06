@@ -24,6 +24,7 @@ namespace AoC2022
                 'R' => new Vector { X = 1, Y = 0 },
                 'U' => new Vector { X = 0, Y = -1 },
                 'D' => new Vector { X = 0, Y = 1 },
+                _ => throw new ArgumentException(nameof(direction)),
             };
         }
 
