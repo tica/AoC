@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AoC2022", "AoC2022\AoC2022.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AoCTest", "AoCTest\AoCTest.csproj", "{FC3FF068-28CC-4E53-91DB-8A32C6976752}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1DFDD577-B690-46CD-B887-313E88C1D91F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +56,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7447AB79-26F1-4A92-A86C-CF83124EAEF9} = {1DFDD577-B690-46CD-B887-313E88C1D91F}
+		{54000AC3-AE5E-4BCB-AE9A-D954CA6195D1} = {1DFDD577-B690-46CD-B887-313E88C1D91F}
+		{FC3FF068-28CC-4E53-91DB-8A32C6976752} = {1DFDD577-B690-46CD-B887-313E88C1D91F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2818A396-BA72-4C21-9D6E-CC2780234C09}
