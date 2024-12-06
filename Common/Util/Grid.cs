@@ -356,7 +356,14 @@ namespace AoC.Util
         }
 
         public T this[Coord p] => Get(p);
-        public T this[int x, int y] => data[y][x];
+        public T this[int x, int y]
+        {
+            get => data[y][x];
+            set
+            {
+                data[y][x] = value;
+            }
+        }
 
         public T Get(Coord p)
         {

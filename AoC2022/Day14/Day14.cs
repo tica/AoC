@@ -1,11 +1,14 @@
-﻿namespace AoC2022
+﻿using Grid = AoC.Util.Grid<char>;
+using Coord = AoC.Util.Grid<char>.Coord;
+
+namespace AoC2022
 {
     public class Day14 : AoC.DayBase
     {
         const int WIDTH = 1000;
-        const int HEIGHT = 1000;
+        const int HEIGHT = 200;
 
-        void printGrid(char[,] grid)
+        void printGrid(Grid grid)
         {
             Console.Clear();
             for (int y = 0; y < 200; ++y)
@@ -18,32 +21,30 @@
             }
         }
 
-        bool dropSand(char[,] grid)
+        bool dropSand(Grid grid)
         {
-            int x = 500; int y = 0;
+            var p = grid.Pos(500, 0);
 
-            while (y < HEIGHT - 1)
+            while (p.Y < HEIGHT - 1)
             {
-                if (grid[x, y + 1] == '.')
+                if (p.Bottom.Value == '.')
                 {
-                    y += 1;
+                    p = p.Bottom;
                 }
-                else if (grid[x - 1, y + 1] == '.')
+                else if (p.BottomLeft.Value == '.')
                 {
-                    y += 1;
-                    x -= 1;
+                    p = p.BottomLeft;
                 }
-                else if (grid[x + 1, y + 1] == '.')
+                else if (p.BottomRight.Value == '.')
                 {
-                    y += 1;
-                    x += 1;
+                    p = p.BottomRight;
                 }
                 else
                 {
-                    if (grid[x, y] == '+')
+                    if (p.Value == '+')
                         return false;
 
-                    grid[x, y] = 'o';
+                    grid.Set(p, 'o');
                     return true;
                 }
             }
@@ -51,17 +52,9 @@
             return false;
         }
 
-        private (char[,] grid, int maxY) ParseInput(string filename)
+        private (Grid grid, int maxY) ParseInput(string filename)
         {
-            char[,] grid = new char[1000, 1000];
-
-            for (int y = 0; y < HEIGHT; ++y)
-            {
-                for (int x = 0; x < WIDTH; ++x)
-                {
-                    grid[x, y] = '.';
-                }
-            }
+            var grid = new AoC.Util.Grid<char>(WIDTH, HEIGHT, '.');
 
             grid[500, 0] = '+';
 
