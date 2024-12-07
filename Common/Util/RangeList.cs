@@ -44,7 +44,7 @@ namespace AoC.Util
             var open = Ranges.First();
             foreach (var r in Ranges.Skip(1))
             {
-                if (r.Intersects(open) || r.Begin == open.End)
+                if (r.Touches(open))
                 {
                     open = open.Merge(r);
                 }

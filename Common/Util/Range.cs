@@ -8,6 +8,11 @@ namespace AoC.Util
 {
     public record class Range(long Begin, long Length)
     {
+        public static Range FromToInclusive(long from, long to)
+        {
+            return new Range(from, to - from + 1);
+        }
+
         public long End => Begin + Length;
 
         public bool Contains(long val) => val >= Begin && val < End;
@@ -31,17 +36,12 @@ namespace AoC.Util
 
         public bool Touches(Range other)
         {
-            if (other.Begin >= End)
+            if (other.Begin > End)
                 return false;
-            if (Begin >= other.End)
+            if (Begin > other.End)
                 return false;
 
             return true;
-        }
-
-        public bool IsBehind(Range other)
-        {
-            return Begin > other.End;
         }
 
         public Range Merge(Range other)
