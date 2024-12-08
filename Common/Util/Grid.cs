@@ -248,6 +248,11 @@ namespace AoC.Util
             }
         }
 
+        public IEnumerable<Coord> WhereValue(T val)
+        {
+            return AllCoordinates.Where(c => c.Value.Equals(val));
+        }
+
         public IEnumerable<Coord> Row(int y)
         {
             for(int x = 0; x < Width; ++x)
@@ -571,6 +576,20 @@ namespace AoC.Util
                 if (p.IsValid)
                     return p.Value;
                 return default;
+            }
+
+            public Coord Move(int dx, int dy)
+            {
+                if (X + dx < 0)
+                    return Invalid;
+                if( X + dx >= Parent.Width)
+                    return Invalid;
+                if (Y + dy < 0)
+                    return Invalid;
+                if (Y + dy >= Parent.Height)
+                    return Invalid;
+
+                return new Coord(Parent, X + dx, Y + dy);
             }
         }
     };

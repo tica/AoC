@@ -14,7 +14,7 @@ namespace AoC2024
         {
             Func<int, bool> checkDiff = line.First() > line.Last() ? (d => d >= -3 && d <= -1) : (d => d >= 1 && d <= 3);
 
-            return line.Pairwise().Select(t => t.Item2 - t.Item1).All(checkDiff);
+            return line.Window2().Select(t => t.Item2 - t.Item1).All(checkDiff);
         }
 
         protected override object Solve1(string filename)

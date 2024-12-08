@@ -20,5 +20,9 @@ namespace AoC.Util
         {
             return b == 0 ? a : GCD(b, a % b);
         }
+        public static int GCD(int a, int b)
+        {
+            return b == 0 ? a : GCD(b, a % b);
+        }
     }
 }

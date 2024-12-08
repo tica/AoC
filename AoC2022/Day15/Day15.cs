@@ -52,7 +52,7 @@ namespace AoC2022
 
         long? findFree(RangeList blocks, int from, int to)
         {
-            foreach( var (l, r) in blocks.Ranges.Pairwise() )
+            foreach( var (l, r) in blocks.Ranges.Window2() )
             {
                 if (l.End < r.Begin)
                 {

@@ -20,7 +20,7 @@ namespace AoC2023
 
         private static IEnumerable<int> CalcDifferences(IEnumerable<int> numbers)
         {
-            return numbers.Pairwise().Select(p => p.Item2 - p.Item1);
+            return numbers.Window2().Select(p => p.Item2 - p.Item1);
         }
 
         private static int Extrapolate(List<int> numbers)
