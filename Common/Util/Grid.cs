@@ -555,7 +555,7 @@ namespace AoC.Util
 
             public Coord Neighbor(Direction dir)
             {
-                switch(dir)
+                switch (dir)
                 {
                     case Direction.Left:
                         return Left;
@@ -582,7 +582,7 @@ namespace AoC.Util
             {
                 if (X + dx < 0)
                     return Invalid;
-                if( X + dx >= Parent.Width)
+                if (X + dx >= Parent.Width)
                     return Invalid;
                 if (Y + dy < 0)
                     return Invalid;
@@ -590,6 +590,38 @@ namespace AoC.Util
                     return Invalid;
 
                 return new Coord(Parent, X + dx, Y + dy);
+            }
+
+            public static Vec operator -(Coord left, Coord right)
+            {
+                if (!left.IsValid)
+                    throw new InvalidOperationException();
+                if (!right.IsValid)
+                    throw new InvalidOperationException();
+
+                return new Vec(left.X - right.X, left.Y - right.Y);
+            }
+
+            public static Coord operator +(Coord left, Vec delta)
+            {
+                return left.Move(delta.dx, delta.dy);
+            }
+
+            public static Coord operator -(Coord left, Vec delta)
+            {
+                return left.Move(-delta.dx, -delta.dy);
+            }
+        }
+
+        public record class Vec(int dx, int dy)
+        {
+            public Vec Normalized
+            {
+                get
+                {
+                    int div = AoC.Util.MathFunc.GCD(dx, dy);
+                    return new Vec(dx / div, dy / div);
+                }
             }
         }
     };

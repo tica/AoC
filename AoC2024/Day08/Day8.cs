@@ -9,7 +9,7 @@ namespace AoC2024
         protected override object Solve1(string filename)
         {
             var grid = GridHelper.Load(filename);
-            var antennaTypes = grid.AllCoordinates.Select(c => c.Value).Distinct().Where(v => v != '.').ToList();
+            var antennaTypes = grid.AllCoordinates.Select(c => c.Value).Distinct().Where(v => v != '.');
             var locations = new HashSet<Coord>();
 
             foreach (var a in antennaTypes)
@@ -18,11 +18,10 @@ namespace AoC2024
 
                 foreach (var (p, q) in coords.Pairwise())
                 {
-                    int dx = p.X - q.X;
-                    int dy = p.Y - q.Y;
+                    var d = p - q;
 
-                    locations.Add(p.Move(dx, dy));
-                    locations.Add(q.Move(-dx, -dy));
+                    locations.Add(p + d);
+                    locations.Add(q - d);
                 }
             }
 
@@ -32,7 +31,7 @@ namespace AoC2024
         protected override object Solve2(string filename)
         {
             var grid = GridHelper.Load(filename);
-            var antennaTypes = grid.AllCoordinates.Select(c => c.Value).Distinct().Where(v => v != '.').ToList();
+            var antennaTypes = grid.AllCoordinates.Select(c => c.Value).Distinct().Where(v => v != '.');
             var locations = new HashSet<Coord>();
 
             foreach (var a in antennaTypes)
@@ -41,18 +40,13 @@ namespace AoC2024
 
                 foreach (var (p, q) in coords.Pairwise())
                 {
-                    int dx = p.X - q.X;
-                    int dy = p.Y - q.Y;
+                    var d = (p - q).Normalized;
 
-                    int d = AoC.Util.MathFunc.GCD(dx, dy);
-                    dx /= d;
-                    dy /= d;
-
-                    for (var pp = p; pp.IsValid; pp = pp.Move(dx, dy))
+                    for (var pp = p; pp.IsValid; pp += d)
                     {
                         locations.Add(pp);
                     }
-                    for (var pp = p; pp.IsValid; pp = pp.Move(-dx, -dy))
+                    for (var pp = p; pp.IsValid; pp -= d)
                     {
                         locations.Add(pp);
                     }
