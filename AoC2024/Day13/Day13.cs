@@ -13,9 +13,9 @@ namespace AoC2024
 {
     public class Day13 : AoC.DayBase
     {
-        record class Machine(int AX, int AY, int BX, int BY, int PrizeX, int PrizeY);
+        record class Machine(int AX, int AY, int BX, int BY, long PrizeX, long PrizeY);
 
-        private IEnumerable<Machine> ParseInput(string filename)
+        private IEnumerable<Machine> ParseInput(string filename, long addToPrize = 0)
         {
             var e = ((IEnumerable<string>)File.ReadAllLines(filename)).GetEnumerator();
 
@@ -32,45 +32,44 @@ namespace AoC2024
                 m = Regex.Match(e.Current, @"Prize: X=(\d+), Y=(\d+)");
                 int px = int.Parse(m.Groups[1].Value);
                 int py = int.Parse(m.Groups[2].Value);
-                yield return new Machine(ax, ay, bx, by, px, py);
+                yield return new Machine(ax, ay, bx, by, px + addToPrize, py + addToPrize);
 
                 e.MoveNext();
             }
         }
 
-        private (int a, int b)? FindBestSolution(Machine m)
+        private (long a, long b)? FindBestSolution(Machine m)
         {
-            (int a, int b)? result = null;
+            // AX * a + BX * b = PX
+            // AY * a + BY * b = PY
 
-            for ( int a = 0; a <= 100; ++a)
-            {
-                int remainingX = m.PrizeX - a * m.AX;
-                int remainingY = m.PrizeY - a * m.AY;
-                if (remainingX < 0 || remainingY < 0)
-                {
-                    return result;
-                }
+            // a + BX/AX * b = PX/AX
+            // a = PX/AX - BX/AX * b
+            // a = (PX - BX * b) / AX
 
-                if (remainingX % m.BX != 0 || remainingY % m.BY != 0)
-                    continue;
+            // AY * (PX/AX - BX/AX * b) + BY * b = PY
+            // AY*PX/AX - AY*BX/AX * b + BY * b = PY
+            // BY * b - AY*BX/AX * b = PY - AY*PX/AX
+            // AX*BY * b - AY*BX * b = PY*AX - AY*PX
+            // b * (AX*BY - AY*BX) = PY*AX - AY*PX
+            // b = (PY*AX - AY*PX) / (AX*BY - AY*BX)            
 
-                int b = remainingX / m.BX;
+            if ((m.PrizeY * m.AX - m.AY * m.PrizeX) % (m.AX * m.BY - m.AY * m.BX) != 0)
+                return null;
 
-                if (remainingY / m.BY != b)
-                    continue;
+            long b = (m.PrizeY * m.AX - m.AY * m.PrizeX) / (m.AX * m.BY - m.AY * m.BX);
 
-                if(result == null || a +b < result.Value.a + result.Value.b)
-                {
-                    result = (a, b);
-                }
-            }
+            if (((m.PrizeX - m.BX * b) % m.AX) != 0)
+                return null;
 
-            return result;
+            long a = (m.PrizeX - m.BX * b) / m.AX;
+
+            return (a, b);            
         }
 
         protected override object Solve1(string filename)
         {
-            int sum = 0;
+            long sum = 0;
 
             foreach( Machine m in ParseInput(filename))
             {
@@ -86,12 +85,23 @@ namespace AoC2024
 
         protected override object Solve2(string filename)
         {
-            return null!;
+            long sum = 0;
+
+            foreach (Machine m in ParseInput(filename, 10000000000000))
+            {
+                var solution = FindBestSolution(m);
+                if (solution != null)
+                {
+                    sum += solution.Value.a * 3 + solution.Value.b;
+                }
+            }
+
+            return sum;
         }
 
-        public override object SolutionExample1 => null!;
-        public override object SolutionPuzzle1 => null!;
-        public override object SolutionExample2 => null!;
-        public override object SolutionPuzzle2 => null!;
+        public override object SolutionExample1 => 480L;
+        public override object SolutionPuzzle1 => 29201L;
+        public override object SolutionExample2 => 875318608908L;
+        public override object SolutionPuzzle2 => 104140871044942L;
     }
 }
