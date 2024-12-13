@@ -8,14 +8,6 @@ namespace AoC2022
         class Number
         {
             public long Value { get; init; }
-
-            public Number Next { get; set; }
-            public Number Prev { get; set; }
-
-            public override string ToString()
-            {
-                return $" {Prev.Value}<- {Value} ->{Next.Value}";
-            }
         }
 
         private void Mix(List<Number> numbers, Dictionary<Number, int> numberToIndex, Dictionary<int, Number> indexToNumber)
