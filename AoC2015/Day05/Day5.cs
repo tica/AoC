@@ -61,7 +61,7 @@ namespace AoC2015
 
         public override object SolutionExample1 => 2;
         public override object SolutionPuzzle1 => 258;
-        public override object SolutionExample2 => null!;
-        public override object SolutionPuzzle2 => null!;
+        public override object SolutionExample2 => 2;
+        public override object SolutionPuzzle2 => 53;
     }
 }
