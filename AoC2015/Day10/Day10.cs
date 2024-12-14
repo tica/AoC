@@ -6,7 +6,7 @@ namespace AoC2015
     {
         IEnumerable<char> ProcessInternal(string s)
         {
-            for( int i = 0; i < s.Length; ++i)
+            for (int i = 0; i < s.Length; ++i)
             {
                 int count = 1;
                 char ch = s[i];
@@ -51,9 +51,9 @@ namespace AoC2015
             return text.Length;
         }
 
-        public override object SolutionExample1 => null!;
-        public override object SolutionPuzzle1 => null!;
-        public override object SolutionExample2 => null!;
-        public override object SolutionPuzzle2 => null!;
+        public override object SolutionExample1 => 237746;
+        public override object SolutionPuzzle1 => 360154;
+        public override object SolutionExample2 => 3369156;
+        public override object SolutionPuzzle2 => 5103798;
     }
 }
