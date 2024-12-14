@@ -1,20 +1,25 @@
 ﻿using System.Diagnostics;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AoC2015
 {
     public class Day10 : AoC.DayBase
     {
-        IEnumerable<char> ProcessInternal(string s)
+        IEnumerable<char> Process(IEnumerable<char> input)
         {
-            for (int i = 0; i < s.Length; ++i)
-            {
-                int count = 1;
-                char ch = s[i];
+            var e = input.GetEnumerator();
 
-                while (i < s.Length - 1 && s[i + 1] == ch)
+            e.MoveNext();
+
+            for( bool done = false; !done; )
+            {
+                int count = 0;
+                char ch = e.Current;
+
+                while (!done && e.Current == ch)
                 {
                     count += 1;
-                    i += 1;
+                    done = !e.MoveNext();
                 }
 
                 yield return (char)('0' + count);
@@ -22,33 +27,29 @@ namespace AoC2015
             }
         }
 
-        string Process(string s)
+        int CalcMutatedLength(IEnumerable<char> text, int mutations)
         {
-            return new string(ProcessInternal(s).ToArray());
+            for (int i = 0; i < mutations; ++i)
+            {
+                text = Process(text);
+            }
+
+            return text.Count();
         }
+
 
         protected override object Solve1(string filename)
         {
             var text = File.ReadAllText(filename);
 
-            for (int i = 0; i < 40; ++i)
-            {
-                text = Process(text);
-            }
-
-            return text.Length;
+            return CalcMutatedLength(text, 40);
         }
 
         protected override object Solve2(string filename)
         {
             var text = File.ReadAllText(filename);
 
-            for (int i = 0; i < 50; ++i)
-            {
-                text = Process(text);
-            }
-
-            return text.Length;
+            return CalcMutatedLength(text, 50);
         }
 
         public override object SolutionExample1 => 237746;
