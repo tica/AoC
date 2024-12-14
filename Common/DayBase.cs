@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace AoC
 {
@@ -85,5 +81,33 @@ namespace AoC
         public abstract object SolutionPuzzle1 { get; }
         public abstract object SolutionExample2 { get; }
         public abstract object SolutionPuzzle2 { get; }
+
+
+
+        public static AoC.DayBase CreateLatest(Assembly assembly)
+        {
+            Type? latest = null;
+            int latestDay = 0;
+
+            foreach (var type in assembly.GetTypes())
+            {
+                var m = Regex.Match(type.Name, @"^Day(\d+)$");
+                if (!m.Success)
+                    continue;
+
+                int day = int.Parse(m.Groups[1].Value);
+
+                if (day > latestDay)
+                {
+                    latestDay = day;
+                    latest = type;
+                }
+            }
+
+            if (latest != null)
+                return (AoC.DayBase)Activator.CreateInstance(latest)!;
+
+            throw new Exception("Not found");
+        }
     }
 }
