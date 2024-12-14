@@ -1,4 +1,4 @@
-﻿namespace AoC2022
+﻿namespace AoC2015
 {
     public class Day0 : AoC.DayBase
     {
