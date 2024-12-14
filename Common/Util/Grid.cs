@@ -248,6 +248,8 @@ namespace AoC.Util
             }
         }
 
+        public IEnumerable<T> AllValues => AllCoordinates.Select(c => c.Value);
+
         public IEnumerable<Coord> WhereValue(T val)
         {
             return AllCoordinates.Where(c => c.Value.Equals(val));
