@@ -34,7 +34,7 @@ namespace AoC2015
 
         protected override object Solve2(string filename)
         {
-            var input = File.ReadAllText(filename).Select(ParseDirection);
+            var input = File.ReadAllText(filename).Select(DirectionHelper.Parse);
 
             var p = (0, 0);
             var q = p;
