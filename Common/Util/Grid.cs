@@ -52,6 +52,18 @@ namespace AoC.Util
                 _ => throw new ArgumentException(nameof(direction))
             };
         }
+
+        public static Direction Parse(char value)
+        {
+            return value switch
+            {
+                '<' => Direction.Left,
+                '>' => Direction.Right,
+                '^' => Direction.Up,
+                'v' => Direction.Down,
+                _ => throw new ArgumentException(nameof(value))
+            };
+        }
     }
 
     public static class GridHelper

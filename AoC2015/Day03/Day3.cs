@@ -4,18 +4,6 @@ namespace AoC2015
 {
     public class Day3 : AoC.DayBase
     {
-        Direction ParseDirection(char ch)
-        {
-            return ch switch
-            {
-                '<' => Direction.Left,
-                '>' => Direction.Right,
-                '^' => Direction.Up,
-                'v' => Direction.Down,
-                _ => throw new NotSupportedException()
-            };
-        }
-
         (int x, int y) Move((int x, int y) p, Direction dir)
         {
             return dir switch
@@ -30,7 +18,7 @@ namespace AoC2015
 
         protected override object Solve1(string filename)
         {
-            var input = File.ReadAllText(filename).Select(ParseDirection);
+            var input = File.ReadAllText(filename).Select(DirectionHelper.Parse);
 
             var p = (0, 0);
             var visited = new HashSet<(int, int)>([p]);
