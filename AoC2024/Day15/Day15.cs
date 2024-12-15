@@ -55,68 +55,48 @@ namespace AoC2024
 
             foreach (var dir in instructions.Select(DirectionHelper.Parse))
             {
-                if( dir == Direction.Left || dir == Direction.Right )
-                {
-                    var n = robot.Neighbor(dir);
-                    while (n.Value != '.' && n.Value != '#')
-                        n = n.Neighbor(dir);
+                bool blocked = false;
 
-                    if (n.Value == '.')
+                var moving = new List<Coord> { robot };
+                var current = new HashSet<Coord> { robot };
+
+                while (!blocked && current.Any())
+                {
+                    var next = new HashSet<Coord>();
+
+                    foreach (var c in current)
                     {
-                        while (n != robot)
+                        if (c.NeighborValue(dir) == '#')
                         {
-                            var prev = n.Neighbor(dir.Reverse());
-                            grid.Set(n, prev.Value);
-                            n = prev;
+                            blocked = true;
+                            break;
                         }
-
-                        grid.Set(robot, '.');
-                        robot = robot.Neighbor(dir);
-                    }
-                }
-                else
-                {
-                    bool blocked = false;
-
-                    var moving = new List<Coord> { robot };
-                    var current = new HashSet<Coord> { robot };
-
-                    while (!blocked && current.Any())
-                    {
-                        var next = new HashSet<Coord>();
-
-                        foreach (var c in current)
+                        else if (c.NeighborValue(dir) == '[')
                         {
-                            if (c.NeighborValue(dir) == '#')
-                            {
-                                blocked = true;
-                                break;
-                            }
-                            else if (c.NeighborValue(dir) == '[')
-                            {
-                                next.Add(c.Neighbor(dir));
+                            next.Add(c.Neighbor(dir));
+                            if (dir == Direction.Up || dir == Direction.Down)
                                 next.Add(c.Neighbor(dir).Neighbor(Direction.Right));
-                            }
-                            else if (c.NeighborValue(dir) == ']')
-                            {
-                                next.Add(c.Neighbor(dir));
-                                next.Add(c.Neighbor(dir).Neighbor(Direction.Left));
-                            }
                         }
-
-                        moving.AddRange(next);
-                        current = next;
-                    }
-
-                    if( !blocked )
-                    {
-                        foreach( var c in Enumerable.Reverse(moving) )
+                        else if (c.NeighborValue(dir) == ']')
                         {
-                            grid.Set(c.Neighbor(dir), c.Value);
-                            grid.Set(c, '.');
+                            next.Add(c.Neighbor(dir));
+                            if( dir == Direction.Up || dir == Direction.Down)
+                                next.Add(c.Neighbor(dir).Neighbor(Direction.Left));
                         }
-                        robot = robot.Neighbor(dir);
                     }
+
+                    moving.AddRange(next);
+                    current = next;
+                }
+
+                if( !blocked )
+                {
+                    foreach( var c in Enumerable.Reverse(moving) )
+                    {
+                        grid.Set(c.Neighbor(dir), c.Value);
+                        grid.Set(c, '.');
+                    }
+                    robot = robot.Neighbor(dir);
                 }
             }
 
