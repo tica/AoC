@@ -7,7 +7,7 @@ namespace AoC2015
     {
         private int SumJson(JsonElement elem, bool ignoreRed = false)
         {
-            switch( elem.ValueKind )
+            switch (elem.ValueKind)
             {
                 case JsonValueKind.Object:
                     if (ignoreRed && elem.EnumerateObject().Any(o => o.Value.ToString() == "red"))
@@ -38,9 +38,9 @@ namespace AoC2015
             return SumJson(doc.RootElement, true);
         }
 
-        public override object SolutionExample1 => null!;
-        public override object SolutionPuzzle1 => null!;
-        public override object SolutionExample2 => null!;
-        public override object SolutionPuzzle2 => null!;
+        public override object SolutionExample1 => 6;
+        public override object SolutionPuzzle1 => 156366;
+        public override object SolutionExample2 => 4;
+        public override object SolutionPuzzle2 => 96852;
     }
 }
