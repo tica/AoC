@@ -25,6 +25,13 @@ namespace AoC.Util
             where TDistance : INumber<TDistance>
             where TNode : notnull
         {
+            return FindPath(start, n => n.Equals(goal), findNeighbors, heuristic);
+        }
+
+        public static List<TNode> FindPath<TNode, TDistance>(TNode start, Func<TNode, bool> isGoal, Func<TNode, IEnumerable<(TNode, TDistance)>> findNeighbors, Func<TNode, TDistance> heuristic)
+            where TDistance : INumber<TDistance>
+            where TNode : notnull
+        {
             var openSet = new PriorityQueue<TNode, TDistance>();
             openSet.Enqueue(start, heuristic(start));
 
@@ -35,10 +42,10 @@ namespace AoC.Util
                 { start, TDistance.Zero }
             };
 
-            while( openSet.Count > 0 )
+            while (openSet.Count > 0)
             {
                 var current = openSet.Dequeue();
-                if(current.Equals(goal))
+                if (isGoal(current))
                 {
                     return ReconstructPath(cameFrom, current);
                 }
@@ -47,7 +54,7 @@ namespace AoC.Util
                 {
                     var tentativeScore = distanceToNode[current] + distance;
 
-                    if( !distanceToNode.ContainsKey(neighbor) || tentativeScore < distanceToNode[neighbor])
+                    if (!distanceToNode.ContainsKey(neighbor) || tentativeScore < distanceToNode[neighbor])
                     {
                         cameFrom[neighbor] = current;
                         distanceToNode[neighbor] = tentativeScore;
