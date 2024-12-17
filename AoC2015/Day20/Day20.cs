@@ -11,12 +11,12 @@
 
             int elflimit = numHouses;
 
-            for( int elf = 1; elf < elflimit; ++elf)
+            for (int elf = 1; elf < elflimit; ++elf)
             {
-                for( int i = elf; i < elflimit; i += elf)
+                for (int i = elf; i < elflimit; i += elf)
                 {
                     counts[i] += elf * 10;
-                    if( counts[i] >= minPresents )
+                    if (counts[i] >= minPresents)
                     {
                         elflimit = i;
                     }
@@ -50,9 +50,9 @@
             return counts.Select((c, i) => (c, i)).First(t => t.c >= minPresents).i;
         }
 
-        public override object SolutionExample1 => null!;
-        public override object SolutionPuzzle1 => null!;
-        public override object SolutionExample2 => null!;
-        public override object SolutionPuzzle2 => null!;
+        public override object SolutionExample1 => 8;
+        public override object SolutionPuzzle1 => 665280;
+        public override object SolutionExample2 => 8;
+        public override object SolutionPuzzle2 => 705600;
     }
 }
