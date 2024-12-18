@@ -110,19 +110,12 @@ namespace AoC2015
             foreach (var loadout in loadouts)
             {
                 var cost = loadout.Sum(w => w.Cost);
-                /*var result = SimulateBattle(boss, loadout) ? 'W' : 'L';
-
-                Console.WriteLine($"{cost} -> {result}");*/
 
                 if (!SimulateBattle(boss, loadout))
                 {
                     return cost;
                 }
             }
-
-            // 282 wrong
-            // 255 wrong
-            // 252 wrong
 
             return 0;
         }
