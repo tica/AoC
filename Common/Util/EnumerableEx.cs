@@ -3,7 +3,7 @@ namespace AoC.Util
 {
     public static class EnumerableEx
     {
-        public static IEnumerable<(T, T)> Window2<T>(this IEnumerable<T> source)
+        public static IEnumerable<(T Left, T Right)> Window2<T>(this IEnumerable<T> source)
         {
             var prev = source.First();
 
