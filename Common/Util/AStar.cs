@@ -67,7 +67,7 @@ namespace AoC.Util
                 }
             }
 
-            throw new Exception("no path");
+            return null!;
         }
     }
 }

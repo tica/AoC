@@ -392,6 +392,10 @@ namespace AoC.Util
         {
             data[p.Y][p.X] = val;
         }
+        public void Set(int X, int Y, T val)
+        {
+            data[Y][X] = val;
+        }
 
         public T Exchange(Coord p, T val)
         {
