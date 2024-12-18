@@ -260,6 +260,6 @@ namespace AoC2022
         public override object SolutionExample1 => 6032;
         public override object SolutionPuzzle1 => 95358;
         public override object SolutionExample2 => 5031;
-        public override object SolutionPuzzle2 => null!;
+        public override object SolutionPuzzle2 => 144361;
     }
 }

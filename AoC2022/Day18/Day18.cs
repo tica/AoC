@@ -148,9 +148,9 @@
             return null;
         }
 
-        public override object SolutionExample1 => null!;
-        public override object SolutionPuzzle1 => null!;
-        public override object SolutionExample2 => null!;
-        public override object SolutionPuzzle2 => null!;
+        public override object SolutionExample1 => 64;
+        public override object SolutionPuzzle1 => 3374;
+        public override object SolutionExample2 => 58;
+        public override object SolutionPuzzle2 => 2010;
     }
 }
