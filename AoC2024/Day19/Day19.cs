@@ -13,13 +13,6 @@ namespace AoC2024
 {
     public class Day19 : AoC.DayBase
     {
-        public static string Reverse(string s)
-        {
-            char[] charArray = s.ToCharArray();
-            Array.Reverse(charArray);
-            return new string(charArray);
-        }
-
         (List<string> Fragments, List<String> Patterns) ParseInput(string filename)
         {
             var fragments = File.ReadAllLines(filename).First().Split(',', StringSplitOptions.TrimEntries).ToList();
