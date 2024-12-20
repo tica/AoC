@@ -610,6 +610,27 @@ namespace AoC.Util
                 return new Coord(Parent, X + dx, Y + dy);
             }
 
+            public int ManhattanDistance(Coord to)
+            {
+                return Math.Abs(X - to.X) + Math.Abs(Y - to.Y);
+            }
+
+            public IEnumerable<Coord> WithinRange(int range)
+            {
+                for( int dy = -range; dy <= range; ++dy)
+                {
+                    int maxdx = range - Math.Abs(dy);
+                    for( int dx = -maxdx; dx <= maxdx; ++dx )
+                    {
+                        var c = Move(dx, dy);
+                        if( c.IsValid )
+                        {
+                            yield return c;
+                        }
+                    }
+                }
+            }
+
             public static Vec operator -(Coord left, Coord right)
             {
                 if (!left.IsValid)
