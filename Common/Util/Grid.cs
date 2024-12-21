@@ -53,6 +53,18 @@ namespace AoC.Util
             };
         }
 
+        public static char ToChar(this Direction direction )
+        {
+            return direction switch
+            {
+                Direction.Left => '<',
+                Direction.Right => '>',
+                Direction.Up => '^',
+                Direction.Down => 'v',
+                _ => throw new ArgumentException(nameof(direction))
+            };
+        }
+
         public static Direction Parse(char value)
         {
             return value switch
@@ -265,6 +277,11 @@ namespace AoC.Util
         public IEnumerable<Coord> WhereValue(T val)
         {
             return AllCoordinates.Where(c => c.Value.Equals(val));
+        }
+
+        public Coord SingleValue(T val)
+        {
+            return AllCoordinates.Single(c => c.Value.Equals(val));
         }
 
         public IEnumerable<Coord> Row(int y)
@@ -613,6 +630,20 @@ namespace AoC.Util
             public int ManhattanDistance(Coord to)
             {
                 return Math.Abs(X - to.X) + Math.Abs(Y - to.Y);
+            }
+
+            public Direction DirectionTo(Coord to)
+            {
+                if (to.X == X - 1 && to.Y == Y)
+                    return Direction.Left;
+                if (to.X == X + 1 && to.Y == Y)
+                    return Direction.Right;
+                if (to.X == X && to.Y == Y - 1)             
+                    return Direction.Up;
+                if (to.X == X && to.Y == Y + 1)
+                    return Direction.Down;
+
+                throw new InvalidOperationException();
             }
 
             public IEnumerable<Coord> WithinRange(int range)
