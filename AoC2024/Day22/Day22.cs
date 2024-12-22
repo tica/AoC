@@ -37,136 +37,39 @@ namespace AoC2024
             return numbers.Select(n => Enumerable.Repeat(0, 2000).Aggregate(n, (x, _) => Process(x))).Sum();
         }
 
-        int IndexOfListInList<T>(List<T> haystack, List<T> needle) where T : IEquatable<T>
-        {
-            for( int i = 0; i < haystack.Count - needle.Count; i++ )
-            {
-                if (!haystack[i].Equals(needle[0]))
-                    continue;
-
-                bool match = true;
-                for( int j = 1; j < needle.Count; ++j)
-                {
-                    if( !haystack[i+j].Equals(needle[j]))
-                    {
-                        match = false;
-                        break;
-                    }
-                }
-
-                if (match)
-                    return i;
-            }
-
-            return -1;
-        }
-
-        int IndexOfListInList(string haystack, string needle)
-        {
-            for (int i = 0; i < haystack.Length - needle.Length; i++)
-            {
-                if (!haystack[i].Equals(needle[0]))
-                    continue;
-
-                bool match = true;
-                for (int j = 1; j < needle.Length; ++j)
-                {
-                    if (!haystack[i + j].Equals(needle[j]))
-                    {
-                        match = false;
-                        break;
-                    }
-                }
-
-                if (match)
-                    return i;
-            }
-
-            return -1;
-        }
-
-
-        IEnumerable<List<int>> GeneratePatterns()
-        {
-            for (int a = -9; a <= 9; ++a)
-            {
-                // -9 => [0..1]
-                // -8 => [0..2]
-                // -7 => [0..3]
-                // -1 => [0..8]
-                // 0 => [0..9]
-                // 1 => [1..9]
-                // 2 => [2..9]
-                // 8 => [8..9]
-                // 9 => [9..9]
-                int minSeqA = Math.Max(0, a);
-                int maxSeqA = Math.Min(9, a + 9);
-
-                int minB = -maxSeqA;
-                int maxB = 9 - minSeqA;
-
-                for (int b = minB; b <= maxB; ++b)
-                {
-                    int minSeqB = minSeqA + b;
-                    int maxSeqB = maxSeqA + b;
-
-                    int minC = -maxSeqB;
-                    int maxC = 9 - minSeqB;
-
-                    for (int c = minC; c <= maxC; ++c)
-                    {
-                        int minSeqC = minSeqB + c;
-                        int maxSeqC = maxSeqB + c;
-
-                        int minD = -maxSeqC;
-                        int maxD = 9 - minSeqC;
-
-                        for (int d = minD; d <= maxD; ++d)
-                        {
-                            yield return [a, b, c, d];
-                        }
-                    }
-                }
-            }
-        }
-
         string Stringify(IEnumerable<int> deltas)
         {
             return new string(deltas.Select(d => (char)(d + 'M')).ToArray());
         }
 
-        int EvalPattern(List<List<int>> sequences, List<List<int>> deltas, List<int> pattern)
+        Dictionary<string, int> BuildFirstIndexLookup(List<(string, int)> src)
+        {
+            var result = new Dictionary<string, int>();
+            for (int i = 0; i < src.Count; ++i)
+            {
+                if( !result.ContainsKey(src[i].Item1))
+                {
+                    result.Add(src[i].Item1, src[i].Item2);
+                }
+            }
+
+            return result;
+        }
+
+        int EvalPattern(List<Dictionary<string, int>> patternLookup, string pattern)
         {
             int sum = 0;
 
-            for (int i = 0; i < sequences.Count; ++i)
+            foreach( var lookup in patternLookup)
             {
-                int index = IndexOfListInList(deltas[i], pattern);
-                if (index < 0)
-                    continue;
-
-                sum += sequences[i][index + pattern.Count];
+                if (lookup.TryGetValue(pattern, out int val))
+                {
+                    sum += val;
+                }
             }
 
             return sum;
         }
-
-        int EvalPattern(List<List<int>> sequences, List<string> deltas, string pattern)
-        {
-            int sum = 0;
-
-            for (int i = 0; i < sequences.Count; ++i)
-            {
-                int index = IndexOfListInList(deltas[i], pattern);
-                if (index < 0)
-                    continue;
-
-                sum += sequences[i][index + pattern.Length];
-            }
-
-            return sum;
-        }
-
 
         protected override object Solve2(string filename)
         {
@@ -175,19 +78,12 @@ namespace AoC2024
             var sequences = numbers.Select(n => EnumerableEx.GenerateConsecutive(2000, n, Process).Select(n => (int)(n % 10)).ToList()).ToList();
             var deltas = sequences.Select(seq => seq.Window2().Select(t =>t.Right - t.Left)).Select(Stringify).ToList();
 
-            var allPatterns = GeneratePatterns().Select(Stringify).ToList();
-            //var allPatterns = new List<List<int>> { new List<int> { -2, 1, -1, 3 } }.Select(Stringify).ToList();
+            var subDeltaResults = sequences.Zip(deltas).Select(t => Enumerable.Range(0, deltas[0].Length - 4).Select(i => (t.Second.Substring(i, 4), t.First[i+4])).ToList()).ToList();
+            var patternLookup = subDeltaResults.Select(BuildFirstIndexLookup).ToList();
 
-            int max = 0;
-            for( int i = 0; i < allPatterns.Count; ++i)
-            {
-                int m = EvalPattern(sequences, deltas, allPatterns[i]);
-                max = Math.Max(max, m);
+            var allPatterns = patternLookup.SelectMany(dict => dict.Keys).Distinct();
 
-                //Console.WriteLine(i);
-            }
-
-            return max;
+            return allPatterns.Max(p => EvalPattern(patternLookup, p));
         }
 
         public override object SolutionExample1 => 37327623L;
