@@ -93,5 +93,16 @@ namespace AoC.Util
                 yield return ApplyTransform(items, transform);
             }
         }
+
+        public static IEnumerable<T> GenerateConsecutive<T>(int count, T initial, Func<T, T> generateNext)
+        {
+            var accu = initial;
+            yield return accu;
+            for ( int i = 0; i < count; ++i)
+            {
+                accu = generateNext(accu);
+                yield return accu;
+            }
+        }
     }
 }
