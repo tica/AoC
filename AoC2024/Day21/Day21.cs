@@ -2,6 +2,11 @@
 using Grid = AoC.Util.Grid<char>;
 using Coord = AoC.Util.Grid<char>.Coord;
 using System.Text;
+using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Net.Http.Headers;
+using System.Reflection.Metadata;
+using System.Runtime.Intrinsics.Arm;
 
 namespace AoC2024
 {
@@ -52,7 +57,7 @@ namespace AoC2024
             if (output.Length == 0)
             {
                 yield return seq;
-                yield break;
+                yield break;            
             }
 
             var next = pad.SingleValue(output.First());
@@ -67,43 +72,161 @@ namespace AoC2024
             }
         }
 
-        protected override object Solve1(string filename)
+        enum DirSeqPart
         {
-            var numpad = GridHelper.Load(Path.Combine(Path.GetDirectoryName(filename)!, "numpad.txt"));
-            var dirpad = GridHelper.Load(Path.Combine(Path.GetDirectoryName(filename)!, "dirpad.txt"));
+            A,
 
-            int sum = 0;
+            LA,
+            vA,
+            RA,
+            UA,
 
-            foreach (var output in File.ReadAllLines(filename))
+            vLLA,
+            RRUA,
+
+            RUA,
+            URA,
+            RUA_URA,
+
+            LUA,
+            ULA,
+            LUA_ULA,
+
+            RvA,
+            vRA,
+            RvA_vRA,
+
+            vLA,
+            LvA,
+            vLA_LvA,
+        }
+
+        long SeqLength(DirSeqPart part, int depth, Dictionary<(DirSeqPart, int), long> c)
+        {
+            if (depth < 0)
+                return 1;
+
+            if( c.TryGetValue((part, depth), out var cached) )
             {
-                Console.WriteLine(output);
-                var seq1 = BuildKeySequences(numpad, output).ToList();
-                var minLength1 = seq1.Min(s => s.Length);
-                var shortest1 = seq1.Where(s => s.Length == minLength1).ToList();
+                return cached;
+            }
 
-                var seq2 = shortest1.SelectMany(s => BuildKeySequences(dirpad, s)).ToList();
-                var minLength2 = seq2.Min(s => s.Length);
-                var shortest2 = seq2.Where(s => s.Length == minLength2).ToList();
+            int d = depth - 1;
 
-                var seq3 = shortest2.SelectMany(s => BuildKeySequences(dirpad, s)).ToList();
-                var minLength3 = seq3.Min(s => s.Length);
-                //var shortest3 = seq3.Where(s => s.Length == minLength3).ToList();
+            long result = part switch
+            {
+                DirSeqPart.A => SeqLength(DirSeqPart.A, d, c),
+                DirSeqPart.LA => SeqLength(DirSeqPart.vLLA, d, c) + SeqLength(DirSeqPart.RRUA, d, c),
+                DirSeqPart.RA => SeqLength(DirSeqPart.vA, d, c) + SeqLength(DirSeqPart.UA, d, c),
+                DirSeqPart.vA => SeqLength(DirSeqPart.vLA_LvA, d, c) + SeqLength(DirSeqPart.RUA_URA, d, c),
+                DirSeqPart.UA => SeqLength(DirSeqPart.LA, d, c) + SeqLength(DirSeqPart.RA, d, c),
+                DirSeqPart.vLLA => SeqLength(DirSeqPart.vLA_LvA, d, c) + SeqLength(DirSeqPart.LA, d, c) + SeqLength(DirSeqPart.A, d, c) + SeqLength(DirSeqPart.RRUA, d, c),
+                DirSeqPart.RRUA => SeqLength(DirSeqPart.vA, d, c) + SeqLength(DirSeqPart.A, d, c) + SeqLength(DirSeqPart.LUA_ULA, d, c) + SeqLength(DirSeqPart.RA, d, c),
+                DirSeqPart.LvA => SeqLength(DirSeqPart.vLLA, d, c) + SeqLength(DirSeqPart.RA, d, c) + SeqLength(DirSeqPart.RUA_URA, d, c),
+                DirSeqPart.vLA => SeqLength(DirSeqPart.vLA_LvA, d, c) + SeqLength(DirSeqPart.LA, d, c) + SeqLength(DirSeqPart.RRUA, d, c),
+                DirSeqPart.RUA => SeqLength(DirSeqPart.vA, d, c) + SeqLength(DirSeqPart.LUA_ULA, d, c) + SeqLength(DirSeqPart.RA, d, c),
+                DirSeqPart.URA => SeqLength(DirSeqPart.LA, d, c) + SeqLength(DirSeqPart.RvA_vRA, d, c) + SeqLength(DirSeqPart.UA, d, c),
+                DirSeqPart.LUA => SeqLength(DirSeqPart.vLLA, d, c) + SeqLength(DirSeqPart.RUA, d, c) + SeqLength(DirSeqPart.RA, d, c),
+                DirSeqPart.ULA => SeqLength(DirSeqPart.LA, d, c) + SeqLength(DirSeqPart.vLA, d, c) + SeqLength(DirSeqPart.RRUA, d, c),
+                DirSeqPart.RvA => SeqLength(DirSeqPart.vA, d, c) + SeqLength(DirSeqPart.LA, d, c) + SeqLength(DirSeqPart.RUA_URA, d, c),
+                DirSeqPart.vRA => SeqLength(DirSeqPart.vLA_LvA, d, c) + SeqLength(DirSeqPart.RA, d, c) + SeqLength(DirSeqPart.UA, d, c),
+                DirSeqPart.vLA_LvA => Math.Min(SeqLength(DirSeqPart.vLA, depth, c), SeqLength(DirSeqPart.LvA, depth, c)),
+                DirSeqPart.RUA_URA => Math.Min(SeqLength(DirSeqPart.RUA, depth, c), SeqLength(DirSeqPart.URA, depth, c)),
+                DirSeqPart.LUA_ULA => Math.Min(SeqLength(DirSeqPart.LUA, depth, c), SeqLength(DirSeqPart.ULA, depth, c)),
+                DirSeqPart.RvA_vRA => Math.Min(SeqLength(DirSeqPart.RvA, depth, c), SeqLength(DirSeqPart.vRA, depth, c)),
+                _ => throw new InvalidOperationException()
+            };
 
-                int numericPart = int.Parse(output.Substring(0, 3));
-                sum += numericPart * minLength3;
+            c.Add((part, depth), result);
+
+            return result;
+        }
+
+        long GuessDirSequenceLength(string seq, int depth, Dictionary<(DirSeqPart, int), long> cache)
+        {
+            char prev = 'A';
+
+            long sum = 0;
+
+            foreach (var k in seq)
+            {
+                int d1 = depth - 1;
+                sum += prev switch
+                {
+                    'A' => k switch
+                    {
+                        '<' => SeqLength(DirSeqPart.vLLA, d1, cache), // "v<<A",
+                        '^' => SeqLength(DirSeqPart.LA, d1, cache), // "<A",
+                        '>' => SeqLength(DirSeqPart.vA, d1, cache), // "vA"
+                        'v' => SeqLength(DirSeqPart.vLA_LvA, d1, cache), // "<vA",
+                        'A' => SeqLength(DirSeqPart.A, d1, cache), // "A",
+                        _ => throw new InvalidOperationException()
+                    },
+                    '<' => k switch
+                    {
+                        '<' => SeqLength(DirSeqPart.A, d1, cache), // "A",
+                        'A' => SeqLength(DirSeqPart.RRUA, d1, cache), // ">>^A",
+                        '^' => SeqLength(DirSeqPart.RUA, d1, cache), // ">^A",
+                        'v' => SeqLength(DirSeqPart.RA, d1, cache), // ">A",
+                        _ => throw new InvalidOperationException()
+                    },
+                    '>' => k switch
+                    {
+                        '>' => SeqLength(DirSeqPart.A, d1, cache), // "A",
+                        'v' => SeqLength(DirSeqPart.LA, d1, cache), // "<A",
+                        '^' => SeqLength(DirSeqPart.LUA_ULA, d1, cache), // "<^A",
+                        'A' => SeqLength(DirSeqPart.UA, d1, cache), // "^A",
+                        _ => throw new InvalidOperationException()
+                    },
+                    '^' => k switch
+                    {
+                        '^' => SeqLength(DirSeqPart.A, d1, cache), // "A",
+                        '>' => SeqLength(DirSeqPart.RvA_vRA, d1, cache), // ">vA", // v>A ?
+                        'A' => SeqLength(DirSeqPart.RA, d1, cache), // ">A",
+                        '<' => SeqLength(DirSeqPart.vLA, d1, cache), // "v<A",
+                        _ => throw new InvalidOperationException()
+                    },
+                    'v' => k switch
+                    {
+                        'v' => SeqLength(DirSeqPart.A, d1, cache), // "A",
+                        '>' => SeqLength(DirSeqPart.RA, d1, cache), // ">A",
+                        '<' => SeqLength(DirSeqPart.LA, d1, cache), // "<A",
+                        'A' => SeqLength(DirSeqPart.RUA_URA, d1, cache), // ">^A",
+                        _ => throw new InvalidOperationException()
+                    },
+                    _ => throw new InvalidOperationException()
+                };
+
+                prev = k;
             }
 
             return sum;
         }
 
-        protected override object Solve2(string filename)
+        long Solve(string filename, int depth)
         {
-            return null!;
+            var numpad = GridHelper.Load(Path.Combine(Path.GetDirectoryName(filename)!, "numpad.txt"));
+
+            var cache = new Dictionary<(DirSeqPart, int), long>();
+
+            return File.ReadAllLines(filename).Sum(
+                line => int.Parse(line.Substring(0, 3)) * BuildKeySequences(numpad, line).Min(s => GuessDirSequenceLength(s, depth, cache))
+            );
         }
 
-        public override object SolutionExample1 => 126384;
-        public override object SolutionPuzzle1 => 125742;
-        public override object SolutionExample2 => null!;
-        public override object SolutionPuzzle2 => null!;
+        protected override object Solve1(string filename)
+        {
+            return Solve(filename, 2);
+        }
+
+        protected override object Solve2(string filename)
+        {
+            return Solve(filename, 25);
+        }
+
+        public override object SolutionExample1 => 126384L;
+        public override object SolutionPuzzle1 => 125742L;
+        public override object SolutionExample2 => 154115708116294L;
+        public override object SolutionPuzzle2 => 157055032722640L;
     }
 }
