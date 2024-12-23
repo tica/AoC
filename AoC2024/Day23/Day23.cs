@@ -19,20 +19,23 @@ namespace AoC2024
             var graph = pairs.Select(p => p[0]).Concat(pairs.Select(p => p[1])).Distinct().ToDictionary(p => p, p => new List<string>());
             foreach (var p in pairs)
             {
-                graph[p[0]].Add(p[1]);
-                graph[p[1]].Add(p[0]);
+                if (p[0].CompareTo(p[1]) < 0)
+                    graph[p[0]].Add(p[1]);
+                else
+                    graph[p[1]].Add(p[0]);
             }
             return graph;
         }
 
         IEnumerable<string[]> FindConnectedSets(Dictionary<string, List<string>> graph)
         {
-            foreach (var (node, adjacent) in graph)
+            foreach (var node in graph.Keys.Order())
             {
-                foreach( var other in adjacent.Where(n => n.CompareTo(node) > 0))
+                var adjacent = graph[node];
+
+                foreach( var other in adjacent)
                 {
-                    foreach( var third in graph[other].Where(n => n.CompareTo(other) > 0)
-                        .Where(n => adjacent.Contains(n)))
+                    foreach( var third in graph[other].Where(adjacent.Contains))
                     {
                         yield return [node, other, third];
                     }
@@ -44,14 +47,11 @@ namespace AoC2024
         {
             foreach( var set in sets )
             {
-                foreach( var other in graph[set.First()].Where(n => !set.Contains(n)))
+                foreach( var other in graph[set.Last()])
                 {
-                    if (!set.All(n => n.CompareTo(other) < 0))
-                        continue;
-
                     if( set.All(n => graph[n].Contains(other)) )
                     {
-                        yield return set.Append(other).Order().ToArray();
+                        yield return set.Append(other).ToArray();
                     }
                 }
             }
