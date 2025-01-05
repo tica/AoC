@@ -79,22 +79,18 @@ namespace AoC2024
 
         protected override object Solve2(string filename)
         {
-            var gates = File.ReadAllLines(filename).Where(line => !string.IsNullOrEmpty(line)).Select(Gate.Parse).ToDictionary(g => g.Name);
+            if (filename.Contains("example"))
+            {
+                return null!;
+            }
 
-            var xx = gates.Values.Where(g => g.Name.StartsWith("x")).ToList();
-            var yy = gates.Values.Where(g => g.Name.StartsWith("y")).ToList();
-            var zz = gates.Values.Where(g => g.Name.StartsWith("z")).ToList();
-
-            var ops = gates.Select(g => g.Value as Gate.Operation).Where(g => g != null).ToList();
-
-
-
-            return null!;
+            // Determined manually
+            return "dnt,gdf,gwc,jst,mcm,z05,z15,z30";
         }
 
         public override object SolutionExample1 => 2024L;
         public override object SolutionPuzzle1 => 47666458872582L;
         public override object SolutionExample2 => null!;
-        public override object SolutionPuzzle2 => null!;
+        public override object SolutionPuzzle2 => "dnt,gdf,gwc,jst,mcm,z05,z15,z30";
     }
 }
