@@ -1,0 +1,1 @@
+﻿AoC.DayBase.CreateLatest(typeof(Program).Assembly).PrintAllDetail();
