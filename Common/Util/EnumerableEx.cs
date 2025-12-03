@@ -1,4 +1,6 @@
 ﻿
+using System.Numerics;
+
 namespace AoC.Util
 {
     public static class EnumerableEx
@@ -103,6 +105,26 @@ namespace AoC.Util
                 accu = generateNext(accu);
                 yield return accu;
             }
+        }
+
+        public static (T, int) MaxIndex<T>(this IEnumerable<T> items) where T: IMinMaxValue<T>, IComparisonOperators<T, T, bool>
+        {
+            T maxVal = T.MinValue;
+            int maxPos = -1;
+            int pos = 0;
+
+            foreach( var item in items)
+            {
+                if( item > maxVal )
+                {
+                    maxVal = item;
+                    maxPos = pos;
+                }
+
+                pos += 1;
+            }
+
+            return (maxVal, maxPos);
         }
     }
 }
