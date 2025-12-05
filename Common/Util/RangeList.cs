@@ -10,6 +10,16 @@ namespace AoC.Util
     {
         public List<Range> Ranges { get; private set; } = new List<Range>();
 
+        public RangeList() { }
+
+        public RangeList(IEnumerable<Range> ranges)
+        {
+            foreach (Range r in ranges)
+            {
+                Add(r);
+            }
+        }
+
         public void Add(Range r)
         {
             Ranges.Add(r);
