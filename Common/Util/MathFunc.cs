@@ -24,5 +24,10 @@ namespace AoC.Util
         {
             return b == 0 ? a : GCD(b, a % b);
         }
+
+        public static long Sqr(long a)
+        {
+            return a * a;
+        }
     }
 }
