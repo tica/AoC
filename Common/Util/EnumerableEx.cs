@@ -126,5 +126,10 @@ namespace AoC.Util
 
             return (maxVal, maxPos);
         }
+
+        public static long Product(this IEnumerable<int> numbers) 
+        {
+            return numbers.Aggregate(1L, (a, x) => a * x);
+        }
     }
 }
