@@ -146,5 +146,10 @@ namespace AoC.Util
         {
             return numbers.Aggregate(1L, (a, x) => a * x);
         }
+
+        public static long Product(this IEnumerable<long> numbers)
+        {
+            return numbers.Aggregate(1L, (a, x) => a * x);
+        }
     }
 }
