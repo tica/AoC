@@ -17,7 +17,22 @@ namespace AoC.Util
             }
         }
 
-        public static IEnumerable<(T, T)> Pairwise<T>(this IEnumerable<T> source)
+        public static IEnumerable<(T Left, T Right)> Window2Wrap<T>(this IEnumerable<T> source)
+        {
+            var first = source.First();
+            var prev = first;
+
+            foreach (var next in source.Skip(1))
+            {
+                yield return (prev, next);
+
+                prev = next;
+            }
+
+            yield return (prev, first);
+        }
+
+        public static IEnumerable<(T Left, T Right)> Pairwise<T>(this IEnumerable<T> source)
         {
             foreach( var (a, i) in source.Select((a, i) => (a, i)) )
             {
