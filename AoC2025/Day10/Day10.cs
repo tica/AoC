@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.Intrinsics;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -12,22 +13,37 @@ namespace AoC2025
 {
     public class Day10 : AoC.DayBase
     {
-        record Joltages : IEquatable<Joltages>, IComparable<Joltages>
+        record Joltages(Vector512<short> Values)
         {
-            private List<int> Values { get; init; }
-            public int Count { get; init; }
+            public bool IsNull => Values == Vector512<short>.Zero;
 
-            public bool ContainsNegative { get; init; }
-            public bool IsNull { get; init; }
+            public bool ContainsNegative => Vector512.LessThan(Values, Vector512<short>.Zero).ExtractMostSignificantBits() != 0;
 
-            public Joltages(List<int> values, bool isNull = false, bool containsNegative = false)
+            private static Vector512<short> ConvertIndices(IEnumerable<int> indices)
             {
-                Values = values;
-                Count = values.Count;
-                IsNull = isNull;
-                ContainsNegative = containsNegative;
+                var values = new short[Vector512<short>.Count];
+
+                foreach (var i in indices)
+                {
+                    values[i] = 1;
+                }
+
+                return Vector512.Create(values);
             }
-            
+
+            public static Joltages WithOnesSet(IEnumerable<int> onesSet)
+            {
+                return new Joltages(ConvertIndices(onesSet));
+            }
+
+            public static Joltages WithValues(IEnumerable<short> values)
+            {
+                var arr = new short[Vector512<short>.Count];
+                Array.Copy(values.ToArray(), arr, values.Count());
+
+                return new Joltages(Vector512.Create(arr));
+            }
+
             public override string ToString()
             {
                 return $"Joltages( {String.Join(", ", Values)} )";
@@ -35,81 +51,7 @@ namespace AoC2025
 
             public static Joltages operator -(Joltages a, Joltages b)
             {
-                var result = new List<int>(a.Count);
-
-                bool allZero = true;
-                for (int i = 0; i < a.Count; ++i)
-                {
-                    int x = a.Values[i] - b.Values[i];
-
-                    if( x < 0 )
-                    {
-                        return new Joltages(result, false, true);
-                    }
-                    else if( x > 0 )
-                    {
-                        allZero = false;
-                    }
-
-                    result.Add(a.Values[i] - b.Values[i]);
-                }
-
-                return new Joltages(result, allZero, false);
-            }
-
-            public static bool operator<=(Joltages a, Joltages b)
-            {
-                for( int i = 0; i < a.Count ; ++i )
-                {
-                    if (a.Values[i] > b.Values[i])
-                        return false;
-                }
-
-                return true;
-            }
-
-            public static bool operator >=(Joltages a, Joltages b)
-            {
-                for (int i = 0; i < a.Count; ++i)
-                {
-                    if (a.Values[i] < b.Values[i])
-                        return false;
-                }
-
-                return true;
-            }
-
-            public virtual bool Equals(Joltages? other)
-            {
-                if (ReferenceEquals(null, other)) return false;
-                if (ReferenceEquals(this, other)) return true;
-
-                return Values.SequenceEqual(other.Values);
-            }
-
-            public override int GetHashCode()
-            {
-                var hashCode = new HashCode();
-                foreach (var val in Values)
-                {
-                    hashCode.Add(val);
-                }
-                return hashCode.ToHashCode();
-            }
-
-            public int CompareTo(Joltages? other)
-            {
-                if (ReferenceEquals(null, other)) return 1;
-                if (ReferenceEquals(this, other)) return 0;
-
-                for (int i = 0; i < Count; ++i)
-                {
-                    int d = Values[i] - other.Values[i];
-                    if (d != 0)
-                        return d;
-                }
-
-                return 0;
+                return new Joltages(a.Values - b.Values);
             }
         }
 
@@ -130,14 +72,13 @@ namespace AoC2025
                         .Aggregate(0, (acc, n) => acc | (1 << n)))
                     .ToList();
 
-                var targetJoltages = new Joltages(arr.Last().Substring(1, arr.Last().Length - 2).Split(',').Select(int.Parse).ToList());
+                var targetJoltages = Joltages.WithValues(arr.Last().Substring(1, arr.Last().Length - 2).Split(',').Select(short.Parse));
 
                 var joltageIncrements = arr.Skip(1).Take(arr.Length - 2)
                     .Select(s => s.Substring(1, s.Length - 2)
                         .Split(',')
-                        .Select(int.Parse)
-                        .Aggregate(Enumerable.Repeat(0, targetJoltages.Count).ToList(), (acc, n) => { acc[n] = 1; return acc; }))
-                    .Select(nn => new Joltages(nn))
+                        .Select(int.Parse))
+                    .Select(Joltages.WithOnesSet)
                     .ToList();
 
                 return new Machine(pattern, toggles, targetJoltages, joltageIncrements);
@@ -215,28 +156,38 @@ namespace AoC2025
             }
         }
 
-        private int CountMinimumPressesRequiredFrom(Joltages state, Machine m, Dictionary<Joltages, int> dp)
+        private int CountMinimumPressesRequiredFrom(Joltages state, Machine m, Dictionary<Joltages, int> dp, int depth, ref int best)
         {
+            int min = int.MaxValue / 2;
+
+            if ( depth >= best )
+            {
+                return min;
+            }
+
             if( dp.TryGetValue(state, out int steps) )
             {
                 return steps;
             }
-
-            int min = int.MaxValue / 2;
-
-            var vv = new System.Numerics.Vector<byte>();
 
             foreach (var i in m.JoltageIncrements)
             {
                 var next = state - i;
 
                 if (next.IsNull)
-                    return 1;
+                {
+                    if( depth < best )
+                    {
+                        best = depth;
+                    }
+                    min = 1;
+                    break;
+                }
 
                 if (next.ContainsNegative)
                     continue;
 
-                min = Math.Min(min, 1 + CountMinimumPressesRequiredFrom(next, m, dp));
+                min = Math.Min(min, 1 + CountMinimumPressesRequiredFrom(next, m, dp, depth + 1, ref best));
             }
 
             dp.Add(state, min);
@@ -246,7 +197,8 @@ namespace AoC2025
 
         int CountMinimumPressesRequired(Machine m)
         {
-            return CountMinimumPressesRequiredFrom(m.TargetJoltages, m, new());
+            int best = int.MaxValue;
+            return CountMinimumPressesRequiredFrom(m.TargetJoltages, m, new(), 0, ref best);
         }
 
         protected override object Solve2(string filename)
