@@ -33,16 +33,38 @@ namespace AoC2025
             return CountPathsToOut(graph, "you");
         }
 
+        private long CountPathsToOut2(Dictionary<string, List<string>> graph, string from, Dictionary<(string, bool, bool), long> dp, bool visitedDac = false, bool visitedFft = false)
+        {
+            if (from == "out")
+            {
+                return (visitedDac && visitedFft) ? 1 : 0;
+            }
+
+            if (dp.TryGetValue((from, visitedDac, visitedFft), out long n))
+            {
+                return n;
+            }
+
+            visitedDac |= from == "dac";
+            visitedFft |= from == "fft";
+
+            long result = graph[from].Sum(n => CountPathsToOut2(graph, n, dp, visitedDac, visitedFft));
+
+            dp[(from, visitedDac, visitedFft)] = result;
+
+            return result;
+        }
+
         protected override object Solve2(string filename)
         {
             var graph = ParseGraph(filename);
 
-            return 0;
+            return CountPathsToOut2(graph, "svr", new());
         }
 
         public override object SolutionExample1 => 5;
         public override object SolutionPuzzle1 => 431;
-        public override object SolutionExample2 => 0;
-        public override object SolutionPuzzle2 => 0;
+        public override object SolutionExample2 => 2L;
+        public override object SolutionPuzzle2 => 358458157650450L;
     }
 }
